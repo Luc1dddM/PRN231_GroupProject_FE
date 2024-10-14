@@ -1,35 +1,59 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { QueryClientProvider } from "react-query";
+import AppLayout from "./components/layouts/AppLayout";
+import Login from "./pages/Identity/Login";
+import Dashboard from "./pages/Dashboard";
+import "./App.css";
+import EmailReconfirm from "./pages/Identity/Reconfirm";
+import Register from "./pages/Identity/Register";
+import ForgotPassword from "./pages/Identity/ForgotPassword";
+import ForgetPasswordConfirm from "./pages/Identity/ForgotPasswordConfirm";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import { queryClient } from "./utils/authorizedAxios";
+
+import UserList from "./pages/UserManagement/UserList";
+
+const ProtectedRoutes = () => {
+  const user = JSON.parse(localStorage.getItem("userInfo"));
+  if (!user) return <Navigate to="/login" replace={true} />;
+  return <Outlet />;
+};
+
+const UnAuthorizedRoutes = () => {
+  const user = JSON.parse(localStorage.getItem("userInfo"));
+  if (user) return <Navigate to="/dashboard" replace={true} />;
+  return <Outlet />;
+};
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <GoogleOAuthProvider clientId="261302569295-6r40gqgs2qjfm2uj7ruq3ranfe7vdmfe.apps.googleusercontent.com">
+      <QueryClientProvider client={queryClient}>
+        <Routes>
+          <Route path="/User/" element={<UserList />}></Route>
+          <Route path="/" element={<Navigate to="/login" replace={true} />} />
+          <Route element={<UnAuthorizedRoutes />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/reconfirm" element={<EmailReconfirm />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgotpassword" element={<ForgotPassword />} />
+            <Route path="/ResetPassword" element={<ForgetPasswordConfirm />} />
+          </Route>
+
+          <Route element={<ProtectedRoutes />}>
+            <Route
+              path="/dashboard"
+              element={
+                <AppLayout>
+                  <Dashboard />
+                </AppLayout>
+              }
+            />
+          </Route>
+        </Routes>
+      </QueryClientProvider>
+    </GoogleOAuthProvider>
+  );
 }
 
-export default App
+export default App;
