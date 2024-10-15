@@ -14,11 +14,11 @@ function UserList() {
   const [editingKey, setEditingKey] = useState();
   const [search, setSearch] = useSearchParams();
 
-  //Get List Student by custom UseItems Hook
   //Get Paginations from url
   const pageSizeUrl = search.get("PageSize")
     ? Number(search.get("PageSize"))
     : 5;
+
   const pageNumberUrl = search.get("PageNumber")
     ? Number(search.get("PageNumber"))
     : 1;
@@ -28,9 +28,9 @@ function UserList() {
     pageSize: pageSizeUrl,
   });
 
+  //Get List Student and ralative info by custom UseItems Hook
   const response = useItems("/api/User", "UserList", pagination);
-  const studentList = response.data?.result?.items ?? [];
-  // Calculate the total number of pages
+  const userList = response.data?.result?.items ?? [];
   const totalItems = response.data?.result?.totalItems;
 
   const showModal = (record) => {
@@ -68,13 +68,20 @@ function UserList() {
     // });
   };
 
-  const handleTableChange = (pagination) => {
+
+  const handleTableChange = (pagination, filters, sorter) => {
+
     setPagination({
       pageNumber: pagination.current,
       pageSize: pagination.pageSize,
     });
+
+    if(sorter.order){
+      search.set("SortBy", sorter.columnKey)
+      search.set("SortOrder", sorter.order)
+    }
+
     search.set("PageNumber", String(pagination.current));
-    setSearch(`?${search.toString()}`, { replace: true });
     search.set("PageSize", String(pagination.pageSize));
     setSearch(`?${search.toString()}`, { replace: true });
   };
@@ -84,27 +91,57 @@ function UserList() {
       title: "Full Name",
       dataIndex: "fullName",
       key: "fullName",
+      sorter: true,
     },
     {
       title: "Email",
       dataIndex: "email",
       key: "email",
+      sorter: true,
+
     },
     {
       title: "Phone Number",
       dataIndex: "phoneNumber",
       key: "phoneNumber",
+      sorter: true,
     },
     {
       title: "Roles",
       dataIndex: "roles",
       key: "roles",
+      sorter: true,
+    },
+    {
+      title: "Birth Day",
+      dataIndex: "birthDay",
+      key: "birthday",
+      sorter: true,
+      render: (text) => {
+         // Kiểm tra xem text có giá trị không
+        if (!text) return '';
+
+        // Chuyển đổi định dạng
+        const date = new Date(text);
+        const day = String(date.getDate()).padStart(2, '0'); 
+        const month = String(date.getMonth() + 1).padStart(2, '0'); 
+        const year = String(date.getFullYear()); 
+
+        return `${day}/${month}/${year}`;
+      }
     },
     {
       title: "Status",
       dataIndex: "isActive",
-      key: "isActive",
+      key: "status",
+      sorter: true,
       render: (isActive) => <span>{isActive ? "Active" : "Disabled"}</span>,
+    },
+    {
+      title: "Created At",
+      dataIndex: "createdAt",
+      key: "createdAd",
+      sorter: true,
     },
     {
       title: "Actions",
@@ -131,7 +168,7 @@ function UserList() {
 
       <Table
         columns={columns}
-        dataSource={studentList}
+        dataSource={userList}
         pagination={{
           current: pagination.pageNumber,
           pageSize: pagination.pageSize,
