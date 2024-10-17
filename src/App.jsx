@@ -12,6 +12,8 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { queryClient } from "./utils/authorizedAxios";
 
 import UserList from "./pages/UserManagement/UserList";
+import ShoppingCart from "./pages/ShoppingCart/CartList";
+import CustomerChatbox from "./pages/ChatBox/CustomerChatBox";
 
 const ProtectedRoutes = () => {
   const user = JSON.parse(localStorage.getItem("userInfo"));
@@ -38,6 +40,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/forgotpassword" element={<ForgotPassword />} />
             <Route path="/ResetPassword" element={<ForgetPasswordConfirm />} />
+            <Route path="/CartList" element={<ShoppingCart />} />
           </Route>
 
           <Route element={<ProtectedRoutes />}>
@@ -50,6 +53,7 @@ function App() {
               }
             />
           </Route>
+          <Route path="/CustomerChatBox" element={<CustomerChatbox />} />
         </Routes>
       </QueryClientProvider>
     </GoogleOAuthProvider>
