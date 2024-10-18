@@ -7,6 +7,7 @@ function Dashboard() {
   const [user, setUser] = useState("");
   const userId = JSON.parse(localStorage.getItem("userInfo")).id;
   const [loading, setLoading] = useState(false);
+  
   useEffect(() => {
     setLoading(true);
     const fetchData = async () => {

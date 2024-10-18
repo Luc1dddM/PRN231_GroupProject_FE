@@ -9,7 +9,7 @@ export function useItems(url, uniqueKey, pagination) {
     PageSize: String(pagination.pageSize),
   });
 
-  return useQuery(
+  const query = useQuery(
     [uniqueKey, search.toString()],
     () =>
       authorizedAxiosInstance
@@ -22,4 +22,6 @@ export function useItems(url, uniqueKey, pagination) {
       retry: false,
     }
   );
+
+  return { ...query, refetch: query.refetch }; // Return refetch
 }
