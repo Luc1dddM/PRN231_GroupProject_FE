@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@microsoft/signalr": "^8.0.7",
     "@react-oauth/google": "^0.12.1",
     "antd": "^5.21.2",
     "axios": "^1.7.7",
@@ -19,7 +20,9 @@
     "react-dom": "^18.3.1",
     "react-query": "^3.39.3",
     "react-router-dom": "^6.26.2",
-    "react-toastify": "^10.0.5"
+    "react-signalr": "^0.2.24",
+    "react-toastify": "^10.0.5",
+    "socket.io-client": "^4.8.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",

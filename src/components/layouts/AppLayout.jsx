@@ -1,4 +1,4 @@
-//import React from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { handleLogoutApi } from "../../apis";
 import {
@@ -7,11 +7,13 @@ import {
   UserOutlined,
   DownOutlined,
   SettingOutlined,
+  MessageOutlined
 } from "@ant-design/icons";
-import { Breadcrumb, Layout, Menu, theme, Dropdown, Space } from "antd";
+import { Breadcrumb, Layout, Menu, theme, Dropdown, Space, Badge } from "antd";
 import { useNavigate } from "react-router-dom";
 import { authorizedAxiosInstance } from "../../utils/authorizedAxios";
 import { API_GateWay } from "../../utils/constants";
+import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 //import { API_GateWay } from "../../utils/constants";
 const { Header, Content, Sider } = Layout;
 
@@ -22,18 +24,103 @@ const items1 = ["1", "2", "3"].map((key) => ({
 
 const AppLayout = ({ children }) => {
   const navigate = useNavigate(); // To use navigation
+  const [newCustomerMessages, setNewCustomerMessages] = useState();
+  const [newAdminMessages, setNewAdminMessages] = useState();
+  const userId = JSON.parse(localStorage.getItem("userInfo")).id;
+  const [GroupId, setGroupId] = useState()
+  const [connection, setConnection] = useState();
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await authorizedAxiosInstance.get(`${API_GateWay}/gateway/chat/group`);
+      setGroupId(res.data.response.result[0].groupId)
 
-  const res = authorizedAxiosInstance.get(`${API_GateWay}/gateway/chat/group`);
-  console.log(res);
+      const res2 = await authorizedAxiosInstance.get(`${API_GateWay}/gateway/chat/totalNotify`);
+      setNewCustomerMessages(res2.data.response.result)
+      setNewAdminMessages(res2.data.response.result)
+    };
+    fetchData().then(() => {
+
+    });
+  }, []);
+  console.log(GroupId)
+
+  useEffect(() => {
+    const fetchData = async () => {
+
+
+      const connection = new HubConnectionBuilder()
+        .withUrl(`https://localhost:6019/chat`, {
+          withCredentials: true
+        })
+        .configureLogging(LogLevel.Information)
+        .build();
+      await connection.start();
+      setConnection(connection);
+      await connection.invoke("OnConnected", userId);
+
+
+
+      connection.on("ReceiveNotifyTotal", (totalNotify) => {
+        const handlerNotify = async () => {
+          const notifi = await authorizedAxiosInstance.get(`${API_GateWay}/gateway/chat/totalNotify`);
+          setNewCustomerMessages(notifi.data.response.result)
+          setNewAdminMessages(notifi.data.response.result)
+        }
+        handlerNotify()
+
+      })
+
+
+      return () => {
+        // Disconnect SignalR when the component unmounts (i.e., user navigates away)
+        if (connection) {
+            connection.stop()
+                .then(() => console.log('Connection stopped'))
+                .catch(err => console.error('Disconnection failed:', err));
+        }
+    };
+
+
+
+      // setNewCustomerMessages(transformedMessages); // Update the messages state with oldMessages
+
+
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("popstate", () => {
+      window.location.reload();
+    });
+
+    return () => {
+      window.removeEventListener("popstate", () => {
+        window.location.reload();
+      });
+    };
+  }, [location]);
+
+  window.addEventListener("beforeunload", function () {
+    connection.stop()
+  });
+
+
   const logout = () => {
     handleLogoutApi();
     navigate("/login");
   };
 
+
+
   const handleMenuClick = ({ key }) => {
-    if (key === "chat") {
+    if (key === "customerChat") {
       // Check if chat is enabled before navigating
-      navigate(`/CustomerChatBox?groupId=${res.result[0].groupId}`); // Redirect to /CustomerChatBox when clicked
+      navigate(`/CustomerChatBox/${GroupId}`); // Redirect to /CustomerChatBox when clicked
+    }
+    else if (key === "adminChat") {
+      // Check if chat is enabled before navigating
+      navigate(`/AdminChatBox/`); // Redirect to /CustomerChatBox when clicked
     }
   };
 
@@ -65,12 +152,34 @@ const AppLayout = ({ children }) => {
         { key: "6", label: "Updates" },
       ],
     },
-    {
-      key: "chat", // New key for CustomerChatBox
-      icon: <LaptopOutlined />,
-      label: "Customer Chatbox", // Label for the new route
-    },
+
+
   ];
+
+if(GroupId){
+  items2.push(    {
+    key: "customerChat", // New key for CustomerChatBox
+    icon: (
+      <Badge count={newCustomerMessages || 0} size="small">
+        <MessageOutlined />
+      </Badge>
+    ),
+    label: "Customer Chatbox", // Label for the new route
+  },)
+}
+
+
+if(true){
+  items2.push(    {
+    key: "adminChat", // New key for CustomerChatBox
+    icon: (
+      <Badge count={newAdminMessages || 0} size="small">
+        <MessageOutlined />
+      </Badge>
+    ),
+    label: "Admin Chatbox", // Label for the new route
+  },)
+}
 
   const {
     token: { colorBgContainer, borderRadiusLG },

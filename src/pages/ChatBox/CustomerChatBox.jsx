@@ -5,60 +5,123 @@ import {
   UserOutlined,
   CustomerServiceOutlined,
 } from "@ant-design/icons";
+import { useParams } from "react-router-dom";
+import { authorizedAxiosInstance } from "../../utils/authorizedAxios";
+import { API_GateWay } from "../../utils/constants";
+import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 
 const { Content } = Layout;
 
 export default function CustomerChatbox() {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      text: "Hello! Welcome to our customer support. How can I assist you today?",
-      sender: "agent",
-    },
-    {
-      id: 2,
-      text: "Hi, I have a question about my recent order.",
-      sender: "customer",
-    },
-    {
-      id: 3,
-      text: "Of course! I'd be happy to help. Could you please provide your order number?",
-      sender: "agent",
-    },
-  ]);
+
+  const userId = JSON.parse(localStorage.getItem("userInfo")).id;
+  let { groupId } = useParams();
+
+  const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const messagesEndRef = useRef(null);
+  const [connection, setConnection] = useState();
+  console.log("test");
+
+
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const connection = new HubConnectionBuilder()
+        .withUrl(`https://localhost:6019/chat`, {
+          withCredentials: true
+        })
+        .configureLogging(LogLevel.Information)
+        .build();
+
+      console.log(connection);
+      await connection.start();
+      await connection.invoke("OnConnected", userId);
+      await connection.invoke("JoinRoom", userId, groupId);
+      setConnection(connection)
+
+
+      connection.on("ReceiveMessage", (UserId, userName, message) => {
+        console.log("message receive: ", message);
+        const newMessage = {
+          id: messages.length + 1,
+          text: message,
+          sender: UserId === userId ? "Customer" : "Agent",
+        };
+        setMessages(messages => [...messages, newMessage]);
+      })
+
+
+
+
+      const res = await authorizedAxiosInstance.get(`${API_GateWay}/gateway/chat/message/${groupId}`);
+      console.log(res.data.listMessage.result);
+      const oldMessages = res.data.listMessage.result;
+
+      const transformedMessages = oldMessages.map((message, index) => ({
+        id: index + 1, // Assigning a unique id based on the index
+        text: message.content, // Using the 'content' field as the 'text'
+        sender: message.senderId === userId ? "Customer" : "Agent", // Using the 'senderName' field as the 'sender'
+      }));
+
+      setMessages(transformedMessages); // Update the messages state with oldMessages
+
+      return () => {
+        // Disconnect SignalR when the component unmounts (i.e., user navigates away)
+        if (connection) {
+            connection.stop()
+                .then(() => console.log('Connection stopped'))
+                .catch(err => console.error('Disconnection failed:', err));
+        }
+    };
+
+    };
+    fetchData();
+  }, [groupId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      scrollToBottom();
-    }, 100); // Small delay to ensure DOM update
-    return () => clearTimeout(timer);
-  }, [messages]);
+  window.addEventListener("beforeunload", function () {
+    connection.stop()
+  });
 
-  const handleSendMessage = () => {
+  useEffect(() => {
+    window.addEventListener("popstate", () => {
+      window.location.reload();
+    });
+
+    return () => {
+      window.removeEventListener("popstate", () => {
+        window.location.reload();
+      });
+    };
+  }, [location]);
+
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     scrollToBottom();
+  //   }, 100); 
+  //   return () => clearTimeout(timer);
+  // }, [messages]);
+
+  const handleSendMessage = async () => {
     if (inputMessage.trim() !== "") {
-      const newMessage = {
-        id: messages.length + 1,
-        text: inputMessage,
-        sender: "customer",
-      };
-      setMessages([...messages, newMessage]);
+
       setInputMessage("");
 
-      // Simulate agent response (you would replace this with actual agent logic)
-      setTimeout(() => {
-        const agentResponse = {
-          id: messages.length + 2,
-          text: "Thank you for providing that information. I'm checking your order details now. Is there anything specific you'd like to know about your order?",
-          sender: "agent",
-        };
-        setMessages((prevMessages) => [...prevMessages, agentResponse]);
-      }, 1000);
+      await connection.invoke("SendMessage", inputMessage, groupId, userId);
+      // Simulate agent response
+      // setTimeout(() => {
+      //   const agentResponse = {
+      //     id: messages.length + 2,
+      //     text: "Thank you for providing that information. I'm checking your order details now.",
+      //     sender: "agent",
+      //   };
+      //   setMessages((prevMessages) => [...prevMessages, agentResponse]);
+      // }, 1000);
     }
   };
 
@@ -85,14 +148,14 @@ export default function CustomerChatbox() {
               <List.Item
                 style={{
                   justifyContent:
-                    item.sender === "customer" ? "flex-end" : "flex-start",
+                    item.sender === "Customer" ? "flex-end" : "flex-start",
                 }}
               >
                 <Card
                   style={{
                     maxWidth: "70%",
                     backgroundColor:
-                      item.sender === "customer" ? "#e6f7ff" : "#f0f0f0",
+                      item.sender === "Customer" ? "#e6f7ff" : "#f0f0f0",
                   }}
                 >
                   <div
@@ -102,13 +165,13 @@ export default function CustomerChatbox() {
                       marginBottom: "8px",
                     }}
                   >
-                    {item.sender === "customer" ? (
+                    {item.sender === "Customer" ? (
                       <UserOutlined style={{ marginRight: "8px" }} />
                     ) : (
                       <CustomerServiceOutlined style={{ marginRight: "8px" }} />
                     )}
                     <span style={{ fontWeight: "bold" }}>
-                      {item.sender === "customer" ? "You" : "Agent"}
+                      {item.sender === "Customer" ? "" : "Agent"}
                     </span>
                   </div>
                   {item.text}

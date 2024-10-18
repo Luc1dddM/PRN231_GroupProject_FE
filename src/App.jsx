@@ -14,6 +14,7 @@ import { queryClient } from "./utils/authorizedAxios";
 import UserList from "./pages/UserManagement/UserList";
 import ShoppingCart from "./pages/ShoppingCart/CartList";
 import CustomerChatbox from "./pages/ChatBox/CustomerChatBox";
+import AdminChatBox from "./pages/ChatBox/AdminChatBox";
 
 const ProtectedRoutes = () => {
   const user = JSON.parse(localStorage.getItem("userInfo"));
@@ -53,7 +54,9 @@ function App() {
               }
             />
           </Route>
-          <Route path="/CustomerChatBox" element={<CustomerChatbox />} />
+          <Route path="/CustomerChatBox/:groupId" element={<CustomerChatbox />} />
+          <Route path="/AdminChatBox/:groupId?" element={<AdminChatBox />} />
+
         </Routes>
       </QueryClientProvider>
     </GoogleOAuthProvider>
