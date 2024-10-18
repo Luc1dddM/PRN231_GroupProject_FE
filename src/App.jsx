@@ -11,6 +11,8 @@ import ForgetPasswordConfirm from "./pages/Identity/ForgotPasswordConfirm";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { queryClient } from "./utils/authorizedAxios";
 
+import Sidebar from "./components/layouts/Sidebar";
+
 import UserList from "./pages/UserManagement/UserList";
 
 const ProtectedRoutes = () => {
@@ -38,6 +40,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/forgotpassword" element={<ForgotPassword />} />
             <Route path="/ResetPassword" element={<ForgetPasswordConfirm />} />
+            <Route path="/test-sidebar" element={<Sidebar />} />
           </Route>
 
           <Route element={<ProtectedRoutes />}>
