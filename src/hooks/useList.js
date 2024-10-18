@@ -5,8 +5,8 @@ import { API_ROOT } from "../utils/constants";
 
 export function useItems(url, uniqueKey, pagination) {
   const [search] = useSearchParams({
-    pageNumber: String(pagination.pageNumber),
-    pageSize: String(pagination.pageSize),
+    PageNumber: String(pagination.pageNumber),
+    PageSize: String(pagination.pageSize),
   });
 
   return useQuery(
