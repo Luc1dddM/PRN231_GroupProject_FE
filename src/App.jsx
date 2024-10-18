@@ -12,7 +12,9 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { queryClient } from "./utils/authorizedAxios";
 
 import UserList from "./pages/UserManagement/UserList";
+import EmailList from "./pages/EmailManagement/EmailList";
 import RolePermissionManager from "./pages/Identity/RolePermissionManagement";
+
 
 const ProtectedRoutes = () => {
   const user = JSON.parse(localStorage.getItem("userInfo"));
@@ -32,6 +34,7 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <Routes>
           <Route path="/User/" element={<UserList />}></Route>
+          <Route path="/Email/" element={<EmailList />}></Route>
           <Route path="/Admin/RolePermission" element={<RolePermissionManager/>}></Route>
           <Route path="/" element={<Navigate to="/login" replace={true} />} />
           <Route element={<UnAuthorizedRoutes />}>
