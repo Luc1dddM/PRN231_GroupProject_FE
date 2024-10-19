@@ -13,26 +13,30 @@ import { queryClient } from "./utils/authorizedAxios";
 
 import UserList from "./pages/UserManagement/UserList";
 import RolePermissionManager from "./pages/Identity/RolePermissionManagement";
+import Profile from "./pages/Profile";
 
-const ProtectedRoutes = () => {
-  const user = JSON.parse(localStorage.getItem("userInfo"));
-  if (!user) return <Navigate to="/login" replace={true} />;
-  return <Outlet />;
-};
-
-const UnAuthorizedRoutes = () => {
-  const user = JSON.parse(localStorage.getItem("userInfo"));
-  if (user) return <Navigate to="/dashboard" replace={true} />;
-  return <Outlet />;
-};
 
 function App() {
+  const user = JSON.parse(localStorage.getItem("userInfo"));
+
+  // eslint-disable-next-line react/prop-types
+  const ProtectedRoutes = ({isAllow}) => {
+    if (!isAllow) return <Navigate to="/login" replace={true} />;
+    return <Outlet />;
+  };
+  
+  const UnAuthorizedRoutes = () => {
+    const user = JSON.parse(localStorage.getItem("userInfo"));
+    if (user) return <Navigate to="/dashboard" replace={true} />;
+    return <Outlet />;
+  };
+
   return (
     <GoogleOAuthProvider clientId="261302569295-6r40gqgs2qjfm2uj7ruq3ranfe7vdmfe.apps.googleusercontent.com">
       <QueryClientProvider client={queryClient}>
         <Routes>
-          <Route path="/User/" element={<UserList />}></Route>
-          <Route path="/Admin/RolePermission" element={<RolePermissionManager/>}></Route>
+
+          
           <Route path="/" element={<Navigate to="/login" replace={true} />} />
           <Route element={<UnAuthorizedRoutes />}>
             <Route path="/login" element={<Login />} />
@@ -42,8 +46,8 @@ function App() {
             <Route path="/ResetPassword" element={<ForgetPasswordConfirm />} />
           </Route>
 
-          <Route element={<ProtectedRoutes />}>
-            <Route
+          <Route element={<ProtectedRoutes isAllow={!!user} />}>
+          <Route
               path="/dashboard"
               element={
                 <AppLayout>
@@ -51,6 +55,18 @@ function App() {
                 </AppLayout>
               }
             />
+            <Route
+              path="/profile"
+              element={
+                <AppLayout>
+                  <Profile />
+                </AppLayout>
+              }
+            />
+          </Route>
+          <Route element={<ProtectedRoutes isAllow={!!user && user.userType === 'admin'} />}>
+            <Route path="/Admin/User" element={<UserList />}></Route>
+            <Route path="/Admin/RolePermission" element={<RolePermissionManager/>}></Route>
           </Route>
         </Routes>
       </QueryClientProvider>
