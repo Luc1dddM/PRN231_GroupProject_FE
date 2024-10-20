@@ -1,7 +1,7 @@
 import { useQuery } from "react-query";
 import { useSearchParams } from "react-router-dom";
 import { authorizedAxiosInstance } from "../utils/authorizedAxios";
-import { API_ROOT } from "../utils/constants";
+import { API_GateWay } from "../utils/constants";
 
 export function useItems(url, uniqueKey, pagination) {
   const [search] = useSearchParams({
@@ -13,7 +13,7 @@ export function useItems(url, uniqueKey, pagination) {
     [uniqueKey, search.toString()],
     () =>
       authorizedAxiosInstance
-        .get(`${API_ROOT}${url}`, {
+        .get(`${API_GateWay}${url}`, {
           params: search,
         })
         .then((res) => res.data),
