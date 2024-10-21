@@ -10,8 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@ckeditor/ckeditor5-react": "^9.3.1",
     "@ant-design/icons": "^5.5.1",
+    "@ckeditor/ckeditor5-react": "^9.3.1",
     "@microsoft/signalr": "^8.0.7",
     "@react-oauth/google": "^0.12.1",
     "antd": "^5.21.2",
@@ -26,8 +26,8 @@
     "react-query": "^3.39.3",
     "react-router-dom": "^6.26.2",
     "react-signalr": "^0.2.24",
-    "socket.io-client": "^4.8.0",
     "react-toastify": "^10.0.5",
+    "socket.io-client": "^4.8.0",
     "styled-component": "^2.8.0",
     "styled-components": "^6.1.13"
   },

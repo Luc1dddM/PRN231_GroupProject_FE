@@ -6,6 +6,7 @@ import {
   SettingOutlined,
   MenuOutlined,
   SearchOutlined,
+  
 } from "@ant-design/icons";
 import {
   Breadcrumb,
@@ -17,16 +18,22 @@ import {
   Drawer,
   Input,
   Menu,
+  Badge
 } from "antd";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Slider from "./Slider";
 
+
 const { Header, Content, Footer } = Layout;
 
 function AppLayout() {
+  const navigate = useNavigate(); // To use navigation
+
+
+
   const [visible, setVisible] = useState(false);
-  const navigate = useNavigate();
+
 
   const items = [
     {
@@ -54,6 +61,9 @@ function AppLayout() {
 
 
   ];
+
+
+  
 
   const logout = () => {
     handleLogoutApi();

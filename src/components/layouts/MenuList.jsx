@@ -1,4 +1,4 @@
-import { Menu } from "antd";
+import { Menu,Badge } from "antd";
 import PropTypes from "prop-types";
 import {
   AppstoreOutlined,
@@ -7,9 +7,17 @@ import {
   HomeOutlined,
   PayCircleOutlined,
   SettingOutlined,
+  MessageOutlined
 } from "@ant-design/icons";
-
+import { authorizedAxiosInstance } from "../../utils/authorizedAxios";
+import { API_GateWay } from "../../utils/constants";
+import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 const MenuList = ({ darkTheme }) => {
+
+
+  const showAdminChat = false;  // Replace with your condition
+
+
   return (
     <Menu
       theme={darkTheme ? "dark" : "light"}
@@ -39,6 +47,19 @@ const MenuList = ({ darkTheme }) => {
       <Menu.Item key="Settings" icon={<SettingOutlined />}>
         Settings
       </Menu.Item>
+      {/* Conditional rendering of the admin chat option */}
+      {showAdminChat && (
+        <Menu.Item 
+          key="adminChat" 
+          icon={
+            <Badge count={5 || 0} size="small">
+              <MessageOutlined />
+            </Badge>
+          }
+        >
+          Admin Chat
+        </Menu.Item>
+      )}
     </Menu>
   );
 };
