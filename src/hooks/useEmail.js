@@ -1,7 +1,7 @@
 import { useQuery } from "react-query";
 import { useSearchParams } from "react-router-dom";
 import { authorizedAxiosInstance } from "../utils/authorizedAxios";
-import { API_Email } from "../utils/constants";
+import { API_GateWay } from "../utils/constants";
 
 export function useEmails(url, uniqueKey) {
   const [search] = useSearchParams();
@@ -10,7 +10,7 @@ export function useEmails(url, uniqueKey) {
     [uniqueKey, search.toString()],
     () =>
       authorizedAxiosInstance
-        .get(`${API_Email}${url}`, {
+        .get(`${API_GateWay}${url}`, {
           params: search,
         })
         .then((res) => res.data),

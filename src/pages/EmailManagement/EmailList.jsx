@@ -1,21 +1,11 @@
 import { useState } from "react";
-import {
-  Table,
-  Button,
-  Modal,
-  Form,
-  Input,
-  Select,
-  Space,
-  Switch,
-  Tag,
-} from "antd";
+import { Table, Button, Modal, Form, Input, Select, Space, Switch, Tag } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useEmails } from "../../hooks/useEmail";
 import { useSearchParams } from "react-router-dom";
 import ActionBar from "../../components/partial/EmailManagement/ActionBar";
 import { authorizedAxiosInstance } from "../../utils/authorizedAxios";
-import { API_Email } from "../../utils/constants";
+import { API_GateWay } from "../../utils/constants";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -28,12 +18,8 @@ function EmailList() {
   const [editingKey, setEditingKey] = useState();
   const [search, setSearch] = useSearchParams();
 
-  const pageSizeUrl = search.get("PageSize")
-    ? Number(search.get("PageSize"))
-    : 5;
-  const pageNumberUrl = search.get("PageNumber")
-    ? Number(search.get("PageNumber"))
-    : 1;
+  const pageSizeUrl = search.get("PageSize") ? Number(search.get("PageSize")) : 5;
+  const pageNumberUrl = search.get("PageNumber") ? Number(search.get("PageNumber")) : 1;
 
   const [pagination, setPagination] = useState({
     pageNumber: pageNumberUrl,
@@ -65,7 +51,7 @@ function EmailList() {
         console.log(editingKey);
         try {
           await authorizedAxiosInstance.put(
-            API_Email + `/emails/${editingKey}`,
+            API_GateWay + `/emails/${editingKey}`,
             { ...values, emailTemplateId: editingKey },
             {
               headers: {
@@ -82,7 +68,7 @@ function EmailList() {
         }
       } else {
         try {
-          await authorizedAxiosInstance.post(API_Email + `/emails`, values, {
+          await authorizedAxiosInstance.post(API_GateWay + `/emails`, values, {
             headers: {
               "Content-Type": "application/json",
               accept: "application/json",
@@ -143,11 +129,7 @@ function EmailList() {
       dataIndex: "active",
       key: "active",
       sorter: true,
-      render: (active) => (
-        <Tag color={active ? "green" : "red"}>
-          {active ? "Active" : "Inactive"}
-        </Tag>
-      ),
+      render: (active) => <Tag color={active ? "green" : "red"}>{active ? "Active" : "Inactive"}</Tag>,
     },
     {
       title: "Description",
@@ -183,11 +165,7 @@ function EmailList() {
           <Button icon={<EditOutlined />} onClick={() => showModal(record)}>
             Edit
           </Button>
-          <Button
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.emailTemplateId)}
-            danger
-          >
+          <Button icon={<DeleteOutlined />} onClick={() => handleDelete(record.emailTemplateId)} danger>
             Delete
           </Button>
         </Space>
@@ -208,54 +186,26 @@ function EmailList() {
           total: totalElements,
           showSizeChanger: true,
           pageSizeOptions: ["5", "10", "20", "50"],
-          showTotal: (total, range) =>
-            `${range[0]}-${range[1]} of ${total} items`,
+          showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
         }}
         onChange={handleTableChange}
       />
 
-      <Modal
-        title={
-          editingKey !== null ? "Edit Email Template" : "Add Email Template"
-        }
-        open={isModalVisible}
-        onOk={handleOk}
-        onCancel={handleCancel}
-      >
+      <Modal title={editingKey !== null ? "Edit Email Template" : "Add Email Template"} open={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
         <Form form={form} layout="vertical">
-          <Form.Item
-            name="name"
-            label="Name"
-            rules={[{ required: true, message: "Please input the name!" }]}
-          >
+          <Form.Item name="name" label="Name" rules={[{ required: true, message: "Please input the name!" }]}>
             <Input />
           </Form.Item>
-          <Form.Item
-            name="subject"
-            label="Subject"
-            rules={[{ required: true, message: "Please input the subject!" }]}
-          >
+          <Form.Item name="subject" label="Subject" rules={[{ required: true, message: "Please input the subject!" }]}>
             <Input />
           </Form.Item>
-          <Form.Item
-            name="body"
-            label="Body"
-            rules={[{ required: true, message: "Please input the body!" }]}
-          >
+          <Form.Item name="body" label="Body" rules={[{ required: true, message: "Please input the body!" }]}>
             <TextArea rows={4} />
           </Form.Item>
-          <Form.Item
-            name="description"
-            label="description"
-            rules={[{ required: true, message: "Please input description!" }]}
-          >
+          <Form.Item name="description" label="description" rules={[{ required: true, message: "Please input description!" }]}>
             <TextArea rows={4} />
           </Form.Item>
-          <Form.Item
-            name="category"
-            label="Category"
-            rules={[{ required: true, message: "Please select the category!" }]}
-          >
+          <Form.Item name="category" label="Category" rules={[{ required: true, message: "Please select the category!" }]}>
             <Select>
               <Option value="Notification">Notification</Option>
               <Option value="Coupon">Coupon</Option>
