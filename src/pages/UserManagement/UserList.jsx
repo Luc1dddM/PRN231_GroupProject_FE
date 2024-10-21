@@ -68,7 +68,6 @@ function UserList() {
     setIsModalVisible(true);
   };
 
-
   const handleOk = () => {
     console.log("ts")
     form.validateFields().then((values) => {
@@ -109,7 +108,6 @@ function UserList() {
    setIsModalVisible(false)
  }
 
-
   const handleUpdateUser = async (user) => {
      // Create a new FormData object
      const formData = new FormData();
@@ -122,8 +120,9 @@ function UserList() {
      formData.append('IsActive', user.isActive);
      formData.append('FullName', user.fullName);
      formData.append('BirthDay', user.birthDay.format('YYYY-MM-DD'));
-     user.roles.forEach(role => formData.append('Roles', role)); // Append roles individually
- 
+    //  user.roles.forEach(role => formData.append('Roles', role)); // Append roles individually
+    
+    setLoading(true)
     await authorizedAxiosInstance.put(
       `${API_GateWay}/gateway/User/${editingId}`, 
       formData,
@@ -133,6 +132,7 @@ function UserList() {
         }
       }
     )
+    setLoading(false)
     refetch()
     setIsModalVisible(false)
     setEditingId(null)
@@ -143,7 +143,6 @@ function UserList() {
     form.resetFields();
     setEditingId(null);
   };
-
 
   const handleTableChange = (pagination, filters, sorter) => {
 
@@ -169,7 +168,7 @@ function UserList() {
       key: "fullName",
       fixed: 'left',
       sorter: true,
-      width: '30%',
+      width: '10%',
     },
     {
       title: "Email",
@@ -178,7 +177,6 @@ function UserList() {
       sorter: true,
       responsive: ['lg'],
       width: 200,
-
     },
     {
       title: "Phone Number",

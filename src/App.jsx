@@ -14,6 +14,7 @@ import { queryClient } from "./utils/authorizedAxios";
 import UserList from "./pages/UserManagement/UserList";
 import RolePermissionManager from "./pages/Identity/RolePermissionManagement";
 import Profile from "./pages/Profile";
+import Test from "./pages/Test";
 
 
 function App() {
@@ -35,9 +36,8 @@ function App() {
     <GoogleOAuthProvider clientId="261302569295-6r40gqgs2qjfm2uj7ruq3ranfe7vdmfe.apps.googleusercontent.com">
       <QueryClientProvider client={queryClient}>
         <Routes>
-
-          
           <Route path="/" element={<Navigate to="/login" replace={true} />} />
+          <Route path="/Test" element={<Test/>}></Route>
           <Route element={<UnAuthorizedRoutes />}>
             <Route path="/login" element={<Login />} />
             <Route path="/reconfirm" element={<EmailReconfirm />} />
@@ -55,7 +55,10 @@ function App() {
                 </AppLayout>
               }
             />
-            <Route
+           
+          </Route>
+          <Route element={<ProtectedRoutes isAllow={!!user && user.userType === 'admin'} />}>
+          <Route
               path="/profile"
               element={
                 <AppLayout>
@@ -63,8 +66,6 @@ function App() {
                 </AppLayout>
               }
             />
-          </Route>
-          <Route element={<ProtectedRoutes isAllow={!!user && user.userType === 'admin'} />}>
             <Route path="/Admin/User" element={<UserList />}></Route>
             <Route path="/Admin/RolePermission" element={<RolePermissionManager/>}></Route>
           </Route>

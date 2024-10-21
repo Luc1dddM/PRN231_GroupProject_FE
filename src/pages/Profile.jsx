@@ -1,16 +1,13 @@
 import { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { Form, Input, DatePicker, Upload, Avatar, Typography, Row, Col, Button, Radio } from 'antd';
 import { UploadOutlined, UserOutlined,CalendarOutlined, SaveOutlined } from '@ant-design/icons';
-import { API_GateWay } from "../utils/constants";
-import { authorizedAxiosInstance } from "../utils/authorizedAxios";
 import FormItem from 'antd/es/form/FormItem';
 import dayjs from 'dayjs'
 import { toast } from 'react-toastify';
-
-
+import { API_GateWay } from "../utils/constants";
+import { authorizedAxiosInstance } from "../utils/authorizedAxios";
+import GlobalLoading from "../components/global/Loading";
 const { Title } = Typography;
-const { TextArea } = Input;
 
 function Profile() {
   const [form] = Form.useForm();
@@ -76,6 +73,7 @@ function Profile() {
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto', padding: 24 }}>
+      <GlobalLoading isLoading={loading} />
       <Title level={2}>My Profile</Title>
       <Form
         form={form}
@@ -160,9 +158,5 @@ function Profile() {
     </div>
   );
 }
-
-Profile.propTypes = {
-  // Add any props here if needed
-};
 
 export default Profile;
