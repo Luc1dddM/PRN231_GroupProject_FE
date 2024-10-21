@@ -11,6 +11,7 @@ import ForgetPasswordConfirm from "./pages/Identity/ForgotPasswordConfirm";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { queryClient } from "./utils/authorizedAxios";
 import UserList from "./pages/UserManagement/UserList";
+import CategoryList from "./pages/Catalog/CategoryManagement/CategoryList";
 import ShoppingCart from "./pages/ShoppingCart/CartList";
 import CustomerChatbox from "./pages/ChatBox/CustomerChatBox";
 import AdminChatBox from "./pages/ChatBox/AdminChatBox";
@@ -37,6 +38,9 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <Routes>
           <Route path="/User/" element={<UserList />}></Route>
+
+          <Route path="/Category/" element={<CategoryList />}></Route>
+
           <Route path="/Email/" element={<EmailList />}></Route>
           <Route path="/Cart" element={<ShoppingCart />} />
           <Route path="/ProductDetail/:id" element={<ProductDetail />} />
