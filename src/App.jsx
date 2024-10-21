@@ -12,7 +12,6 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { queryClient } from "./utils/authorizedAxios";
 import UserList from "./pages/UserManagement/UserList";
 import CategoryList from "./pages/Catalog/CategoryManagement/CategoryList";
-import ShoppingCart from "./pages/ShoppingCart/CartList";
 import CustomerChatbox from "./pages/ChatBox/CustomerChatBox";
 import AdminChatBox from "./pages/ChatBox/AdminChatBox";
 import EmailList from "./pages/EmailManagement/EmailList";
