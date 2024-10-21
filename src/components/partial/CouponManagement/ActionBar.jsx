@@ -10,53 +10,46 @@ import {
   Col,
   DatePicker,
   Input,
+  Slider,
 } from "antd";
 import { FilterOutlined, PlusOutlined } from "@ant-design/icons";
 import PropTypes from "prop-types";
 
 const { Search } = Input;
 const { RangePicker } = DatePicker;
-//Define filters options in filters (id: checking, label: display in webisite, value: value pass in URL)
+
 const filterOptions = {
-  category: [
-    { id: "Notification", label: "Notification", value: "Notification" },
-    { id: "Coupon", label: "Coupon", value: "Coupon" },
-  ],
   status: [
     { id: "active", label: "Active", value: "active" },
     { id: "inactive", label: "In Active", value: "false" },
   ],
 };
+
 function ActionBar({ showModal }) {
-  const [search, setSearch] = useSearchParams(); //searchParams hook
+  const [search, setSearch] = useSearchParams();
 
-  const statusValues = search.getAll("Statuses") ?? []; // Get array of statuses from URL (if any)
+  const statusValues = search.getAll("Statuses") ?? [];
 
-  //Change statusValues to statusIds to assign in state (render by id not by value)
   const statusIds = filterOptions.status
     .filter((option) => statusValues.includes(option.value))
     .map((option) => option.id);
 
-  //seletedFilters for after apply button
   const [selectedFilters, setSelectedFilters] = useState({
-    category: [],
     status: statusIds ?? [],
+    priceRange: [0, 1000],
     createdFrom: null,
     createdTo: null,
   });
 
-  //TempFilters for tmp user choose in the filter modal
   const [tempFilters, setTempFilters] = useState({
-    category: [],
     status: [],
+    priceRange: [0, 1000],
     createdFrom: null,
     createdTo: null,
   });
 
-  //Status modal (open/close)
   const [popoverVisible, setPopoverVisible] = useState(false);
 
-  // Handle filter change per category
   const handleFilterChange = (filterType, checkedValues) => {
     setTempFilters((prev) => ({
       ...prev,
@@ -64,109 +57,81 @@ function ActionBar({ showModal }) {
     }));
   };
 
-  //Handle Apply button click
   const handleSave = () => {
-    setSelectedFilters(tempFilters); // set temp filters to selected filters
-    handleChangeQuery(tempFilters); // set filters to URL to fetch API
-    setPopoverVisible(false); // close popup
+    setSelectedFilters(tempFilters);
+    handleChangeQuery(tempFilters);
+    setPopoverVisible(false);
   };
 
-  //Set Status to params
   const handleChangeQuery = (object) => {
     if (object.status.length > 0) {
-      // check if fitler options exist
-      search.delete("Statuses"); // Clear previous Statuses
-      //for each status to append into the url (using object.status.join() make url encrypt)
+      search.delete("Statuse");
       object.status.forEach((status) => {
-        search.append("Statuses", status === "active" ? "True" : "False");
+        search.append("Statuse", status === "active" ? "true" : "false");
       });
     } else {
-      // no filter option in array => not filer status any more
-      search.delete("Statuses");
+      search.delete("Statuse");
     }
 
-    //The same with above but for Gender
-    if (object.category.length > 0) {
-      search.delete("Categories");
-
-      object.category.forEach((category) => {
-        search.append("Categories", category);
-      });
+    if (object.priceRange && object.priceRange.length === 2) {
+      search.set("minAmount", object.priceRange[0].toString());
+      search.set("maxAmount", object.priceRange[1].toString());
     } else {
-      search.delete("Categories");
+      search.delete("minAmount");
+      search.delete("maxAmount");
     }
-    // if (object.createdFrom) {
-    //   search.set("createdFrom", object.createdFrom);
-    // } else {
-    //   search.delete("createdFrom");
-    // }
-    // if (object.createdTo) {
-    //   search.set("createdTo", object.createdTo);
-    // } else {
-    //   search.delete("createdTo");
-    // }
-    setSearch(search, { replace: true }); // Set all params in seach to url
+
+    setSearch(search, { replace: true });
   };
 
-  //Handle reset button
   const handleReset = () => {
     setTempFilters({
-      category: [],
       status: [],
+      priceRange: [0, 1000],
       createdFrom: null,
       createdTo: null,
     });
   };
 
-  //Remove filters by click close button in filter tag
   const removeFilter = (filterType, filterValue) => {
-    //define what what will be removed
-    const RemovedTemp = {
-      ...selectedFilters,
-      [filterType]: selectedFilters[filterType].filter(
-        (value) => value !== filterValue
-      ),
-    };
-
-    //Change query in URL before change in state
-    handleChangeQuery(RemovedTemp);
-
-    //Change filters in state to render in Browser
-    setSelectedFilters(RemovedTemp);
-
-    //*IMPORTANT*//
-    /*Explaination for above code flow
-      Why we dont setSelectedFilters before then use the SelectedFilters to pass to handleChangeQuery function?
-      Because react use state hook when set a new value is asynchronous and there no await for this 
-      so if pass the SelectedFilters to handleChangeQuery function there is nothing changed 
-      TRY BY YOURSELF :))) 
-    */
+    if (filterType === "priceRange") {
+      const RemovedTemp = {
+        ...selectedFilters,
+        priceRange: [0, 1000],
+      };
+      handleChangeQuery(RemovedTemp);
+      setSelectedFilters(RemovedTemp);
+    } else {
+      const RemovedTemp = {
+        ...selectedFilters,
+        [filterType]: selectedFilters[filterType].filter(
+          (value) => value !== filterValue
+        ),
+      };
+      handleChangeQuery(RemovedTemp);
+      setSelectedFilters(RemovedTemp);
+    }
   };
 
   const handleSearch = (value) => {
-    console.log(value);
-    value ? search.set("SearchTerm", value) : search.delete("SearchTerm");
-
+    value ? search.set("Keyword", value) : search.delete("Keyword");
     setSearch(search, { replace: true });
   };
 
-  //Filter modal content
   const filterContent = (
     <div style={{ width: 300 }}>
       <div style={{ marginBottom: 16 }}>
-        <h4>Category</h4>
-        <Checkbox.Group
-          value={tempFilters.category}
-          onChange={(checkedValues) =>
-            handleFilterChange("category", checkedValues)
-          }
-        >
-          {filterOptions.category.map((option) => (
-            <Checkbox key={option.id} value={option.value}>
-              {option.label}
-            </Checkbox>
-          ))}
-        </Checkbox.Group>
+        <h4>Price Range</h4>
+        <Slider
+          range
+          min={0}
+          max={1000}
+          value={tempFilters.priceRange}
+          onChange={(value) => handleFilterChange("priceRange", value)}
+        />
+        <div>
+          {tempFilters.priceRange[0]} vnd - {tempFilters.priceRange[1]} vnd
+        </div>
       </div>
 
       <div style={{ marginBottom: 16 }}>
@@ -224,9 +189,6 @@ function ActionBar({ showModal }) {
       >
         <Row gutter={24} align="middle">
           <Col flex="none">
-            <h2 style={{ margin: 0, whiteSpace: "nowrap" }}>Action Bar</h2>
-          </Col>
-          <Col flex="auto">
             <Space
               size="middle"
               style={{ width: "100%", justifyContent: "flex-end" }}
@@ -237,33 +199,40 @@ function ActionBar({ showModal }) {
                 onSearch={handleSearch}
                 style={{ width: 300 }}
               />
-              <Space
-                size="small"
-                style={{ flexWrap: "wrap", justifyContent: "flex-end" }}
+              <Popover
+                content={filterContent}
+                title="Filters"
+                trigger="click"
+                visible={popoverVisible}
+                onVisibleChange={(visible) => {
+                  setPopoverVisible(visible);
+                  if (visible) {
+                    setTempFilters(selectedFilters);
+                  }
+                }}
               >
-                <Popover
-                  content={filterContent}
-                  title="Filters"
-                  trigger="click"
-                  visible={popoverVisible}
-                  onVisibleChange={(visible) => {
-                    setPopoverVisible(visible);
-                    if (visible) {
-                      setTempFilters(selectedFilters);
-                    }
-                  }}
-                >
-                  <Button icon={<FilterOutlined />}>Filter</Button>
-                </Popover>
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={showModal}
-                  style={{ backgroundColor: "#1890ff" }}
-                >
-                  Add Template
-                </Button>
-              </Space>
+                <Button icon={<FilterOutlined />}>Filter</Button>
+              </Popover>
+            </Space>
+          </Col>
+          <Col flex="auto">
+            <Space
+              size="middle"
+              style={{ width: "100%", justifyContent: "flex-end" }}
+            >
+              <Button
+                type="primary"
+                onClick={showModal}
+                style={{ backgroundColor: "#1890ff" }}
+              >
+                Add New
+              </Button>
+              <Button type="primary" style={{ backgroundColor: "#1890ff" }}>
+                Export
+              </Button>
+              <Button type="primary" style={{ backgroundColor: "#1890ff" }}>
+                Import
+              </Button>
             </Space>
           </Col>
         </Row>
@@ -283,8 +252,19 @@ function ActionBar({ showModal }) {
                 style={{ flexWrap: "wrap", justifyContent: "flex-end" }}
               >
                 {Object.keys(selectedFilters).map((filterType) => {
-                  // Ensure selectedFilters[filterType] is an array and filterType is not 'birthday'
-                  if (
+                  if (filterType === "priceRange") {
+                    return (
+                      <Tag
+                        key="priceRange"
+                        closable
+                        onClose={() => removeFilter("priceRange")}
+                        style={{ marginRight: 3 }}
+                      >
+                        Price: {selectedFilters.priceRange[0]} vnd -
+                        {selectedFilters.priceRange[1]} vnd
+                      </Tag>
+                    );
+                  } else if (
                     filterType !== "createdFrom" &&
                     filterType !== "createdTo"
                   ) {
@@ -303,7 +283,7 @@ function ActionBar({ showModal }) {
                       </Tag>
                     ));
                   }
-                  return null; // Return null for 'birthday' filterType
+                  return null;
                 })}
               </Space>
             </Col>

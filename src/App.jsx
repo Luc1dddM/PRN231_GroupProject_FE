@@ -17,6 +17,7 @@ import AdminChatBox from "./pages/ChatBox/AdminChatBox";
 import EmailList from "./pages/EmailManagement/EmailList";
 import ShoppingCart from "./pages/ShoppingCart/Cart";
 import RolePermissionManager from "./pages/Identity/RolePermissionManagement";
+import CouponList from "./pages/CouponManagement/CouponList";
 import Profile from "./pages/Profile";
 import Test from "./pages/Test";
 import ProductDetail from "./pages/Catalog/ProductDetail";
@@ -45,9 +46,16 @@ function App() {
           <Route path="/User/" element={<UserList />}></Route>
           <Route path="/Category/" element={<CategoryList />}></Route>
           <Route path="/Email/" element={<EmailList />}></Route>
+
+          <Route path="/Coupon/" element={<CouponList />}></Route>
+          <Route
+            path="/Admin/RolePermission"
+            element={<RolePermissionManager />}
+          ></Route>
           <Route path="/Cart" element={<ShoppingCart />} />
           <Route path="/ProductDetail/:id" element={<ProductDetail />} />
           <Route path="/Admin/RolePermission" element={<RolePermissionManager />}></Route>
+
           <Route path="/" element={<Navigate to="/login" replace={true} />} />
           <Route path="/Test" element={<Test/>}></Route>
           <Route element={<UnAuthorizedRoutes />}>
