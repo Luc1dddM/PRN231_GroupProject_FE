@@ -10,8 +10,10 @@ import ForgotPassword from "./pages/Identity/ForgotPassword";
 import ForgetPasswordConfirm from "./pages/Identity/ForgotPasswordConfirm";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { queryClient } from "./utils/authorizedAxios";
-
 import UserList from "./pages/UserManagement/UserList";
+import ShoppingCart from "./pages/ShoppingCart/CartList";
+import CustomerChatbox from "./pages/ChatBox/CustomerChatBox";
+import AdminChatBox from "./pages/ChatBox/AdminChatBox";
 import EmailList from "./pages/EmailManagement/EmailList";
 import RolePermissionManager from "./pages/Identity/RolePermissionManagement";
 
@@ -43,6 +45,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/forgotpassword" element={<ForgotPassword />} />
             <Route path="/ResetPassword" element={<ForgetPasswordConfirm />} />
+            <Route path="/CartList" element={<ShoppingCart />} />
           </Route>
 
           <Route element={<ProtectedRoutes />}>
@@ -55,6 +58,9 @@ function App() {
               }
             />
           </Route>
+          <Route path="/CustomerChatBox/:groupId" element={<CustomerChatbox />} />
+          <Route path="/AdminChatBox/:groupId?" element={<AdminChatBox />} />
+
         </Routes>
       </QueryClientProvider>
     </GoogleOAuthProvider>
