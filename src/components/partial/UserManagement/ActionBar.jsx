@@ -2,7 +2,11 @@ import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Button, Popover, Checkbox, Space, Tag, Row, Col, DatePicker,Input } from 'antd';
 import { FilterOutlined, PlusOutlined } from "@ant-design/icons";
+import { authorizedAxiosInstance } from "../../../utils/authorizedAxios";
+import { API_GateWay } from "../../../utils/constants";
+import { toast } from "react-toastify";
 import PropTypes from "prop-types";
+import Test from "../../../pages/Test";
 
 const { Search } = Input;
 
@@ -127,6 +131,38 @@ function ActionBar({ showModal }) {
     setSearch(search, { replace: true }); 
   }
 
+  const handleImportUser = async (formData) => {
+    const res = await authorizedAxiosInstance.post(
+        `${API_GateWay}/gateway/User/ImportUser`, 
+          formData,
+        {
+          headers: {
+              'Content-Type': 'multipart/form-data' // Specify the content type
+          },
+          responseType: "blob",
+        }
+      )
+
+    if(res.data.size > 0){
+        const blob = new Blob([res.data], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+          const url = window.URL.createObjectURL(blob);
+          const outputFilename = `${Date.now()}.xlsx`;
+          const a = document.createElement("a");
+          a.style.display = "none";
+          a.href = url;
+          a.setAttribute("download", outputFilename);
+          // the filename you want
+          document.body.appendChild(a);
+          a.click();
+
+        toast.error("Please Check The Errors File")
+    }else{
+        toast.success("Import User Successfully")
+    }
+  }
+
 
   //Filter modal content
   const filterContent = (
@@ -227,10 +263,10 @@ function ActionBar({ showModal }) {
                 type="primary"
                 icon={<PlusOutlined />}
                 onClick={showModal}
-                style={{ backgroundColor: "#1890ff" }}
               >
                 Add Template
               </Button>
+              <Test handleSubmit={handleImportUser}></Test>
             </Space>
           </Space>
         </Col>

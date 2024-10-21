@@ -88,6 +88,10 @@ function Register() {
                   min: 8,
                   message: "Password must be at least 8 characters long!",
                 },
+                {
+                  pattern: /^(?=.*[A-Z])(?=.*\d)(?=.*\W)[A-Za-z\d\W]{8,}$/,
+                  message: 'Password must be at least 8 characters, include 1 uppercase, 1 digit, and 1 non-alphabet character.',
+                },
               ]}
             >
               <Input.Password prefix={<LockOutlined />} placeholder="Password" />
