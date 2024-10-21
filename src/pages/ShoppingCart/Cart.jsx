@@ -1,6 +1,6 @@
 import React from "react";
 import { ArrowLeftOutlined, MinusOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons";
-import { Button, InputNumber, Select, Typography, Space } from "antd";
+import { Button, InputNumber, Select, Typography, Space, Empty } from "antd";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "react-query";
@@ -12,9 +12,29 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 
 function CartItem({ item, updateQuantity, removeItem, updateColor }) {
+  const { data: productDetailData } = useQuery(
+    ["productDetailInCartUI", item.productId],
+    async () => {
+      const response = await authorizedAxiosInstance.get(`${API_GateWay}/gateway/products/Order/${item.productId}`);
+      return response.data;
+    },
+    {
+      staleTime: 120000,
+      retry: false,
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+    }
+  );
+
+  const colorOptions = productDetailData?.product?.result?.color || [];
+  const productObj = productDetailData?.product?.result?.product || {};
+  console.log(colorOptions);
+
   return (
     <div className="flex items-center mb-4">
-      <div className="w-24 h-24 bg-gray-200 mr-4"></div>
+      <div className="w-24 h-24 bg-gray-200 mr-4 rounded-lg overflow-hidden">
+        <img src={`https://raw.githubusercontent.com/Hvuthai/tesst/main/${productObj.imageUrl}`} alt="Product Image" className="object-cover w-full h-full" />
+      </div>
       <div className="flex-1">
         <Title level={4} className="mb-0 text-sm md:text-base">
           {item.productName}
@@ -22,10 +42,14 @@ function CartItem({ item, updateQuantity, removeItem, updateColor }) {
         <Text type="secondary">${item.price.toFixed(2)}</Text>
         <div className="mt-2">
           <Space>
-            <Select value={item.color} className="w-30" onChange={(value) => updateColor(item.cartDetailId, value)}>
-              <Option value="Red">Red</Option>
-              <Option value="Blue">Blue</Option>
-              <Option value="Green">Green</Option>
+            <Select value={item.color} className="w-32" onChange={(value, option) => updateColor(item.cartDetailId, value, option.productCategoryId)}>
+              {colorOptions.map((color) => (
+                //nsure that even if two colors are the same (e.g., "Black"),
+                //they will have different keys when associated with different products.
+                <Option key={`${color.productId}-${color.colorName}`} value={color.colorName} productCategoryId={color.productCategoryId}>
+                  {color.colorName}
+                </Option>
+              ))}
             </Select>
             <div className="flex items-center">
               <Button icon={<MinusOutlined />} onClick={() => updateQuantity(item.cartDetailId, item.quantity - 1)} disabled={item.quantity === 1} />
@@ -51,6 +75,8 @@ function CartItem({ item, updateQuantity, removeItem, updateColor }) {
 CartItem.propTypes = {
   item: PropTypes.shape({
     cartDetailId: PropTypes.string.isRequired,
+    productCategoryId: PropTypes.string.isRequired,
+    productId: PropTypes.string.isRequired,
     productName: PropTypes.string.isRequired,
     quantity: PropTypes.number.isRequired,
     color: PropTypes.string.isRequired,
@@ -81,7 +107,7 @@ function ShoppingCart() {
 
   const updateQuantityMutation = useMutation(
     async ({ cartHeader }) => {
-      return await authorizedAxiosInstance.post(`${API_GateWay}/gateway/cart`, {
+      return await authorizedAxiosInstance.put(`${API_GateWay}/gateway/cart`, {
         cartHeader: cartHeader,
       });
     },
@@ -120,7 +146,7 @@ function ShoppingCart() {
 
   const updateColorMutation = useMutation(
     async ({ cartHeader }) => {
-      return await authorizedAxiosInstance.post(`${API_GateWay}/gateway/cart`, {
+      return await authorizedAxiosInstance.put(`${API_GateWay}/gateway/cart`, {
         cartHeader: cartHeader,
       });
     },
@@ -154,7 +180,7 @@ function ShoppingCart() {
     removeItemMutation.mutate(cartDetailId);
   };
 
-  const handleUpdateColor = (cartDetailId, newColor) => {
+  const handleUpdateColor = (cartDetailId, newColor, newProductCategoryId) => {
     if (cartData?.response?.result) {
       const currentCart = cartData.response.result;
       const modifiedDetail = currentCart.cartDetails.find((detail) => detail.cartDetailId === cartDetailId);
@@ -165,6 +191,7 @@ function ShoppingCart() {
             {
               ...modifiedDetail,
               color: newColor,
+              productCategoryId: newProductCategoryId,
             },
           ],
         };
@@ -192,12 +219,16 @@ function ShoppingCart() {
             <div className="flex flex-col lg:flex-row lg:space-x-8">
               <div className="w-full lg:w-2/3 mb-8 lg:mb-0">
                 <h2 className="text-2xl font-bold mb-6">Shopping Cart</h2>
-                {cart.cartDetails.map((item, index) => (
-                  <React.Fragment key={item.cartDetailId}>
-                    <CartItem item={item} updateQuantity={handleUpdateQuantity} removeItem={handleRemoveItem} updateColor={handleUpdateColor} />
-                    {index < cart.cartDetails.length - 1 && <hr className="my-4" />}
-                  </React.Fragment>
-                ))}
+                {totalItems === 0 ? (
+                  <Empty description="Uh-oh! Your cart is feeling a bit lonely. Add some friends!" />
+                ) : (
+                  cart.cartDetails.map((item, index) => (
+                    <React.Fragment key={item.cartDetailId}>
+                      <CartItem item={item} updateQuantity={handleUpdateQuantity} removeItem={handleRemoveItem} updateColor={handleUpdateColor} />
+                      {index < cart.cartDetails.length - 1 && <hr className="my-4" />}
+                    </React.Fragment>
+                  ))
+                )}
               </div>
               <div className="w-full lg:w-1/3">
                 <div className="bg-gray-50 rounded-lg p-6">
@@ -216,7 +247,7 @@ function ShoppingCart() {
                       <span>Total</span>
                       <span>${total.toFixed(2)}</span>
                     </div>
-                    <Button type="primary" block className="mt-6">
+                    <Button type="primary" block className="mt-6" disabled={totalItems === 0}>
                       Checkout
                     </Button>
                   </div>
