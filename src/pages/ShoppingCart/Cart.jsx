@@ -105,6 +105,7 @@ function ShoppingCart() {
     }
   );
 
+  console.log("cart data: ", cartData);
   const updateQuantityMutation = useMutation(
     async ({ cartHeader }) => {
       return await authorizedAxiosInstance.put(`${API_GateWay}/gateway/cart`, {
@@ -247,7 +248,7 @@ function ShoppingCart() {
                       <span>Total</span>
                       <span>${total.toFixed(2)}</span>
                     </div>
-                    <Button type="primary" block className="mt-6" disabled={totalItems === 0}>
+                    <Button type="primary" block className="mt-6" disabled={totalItems === 0} onClick={() => navigate("/CartCheckout")}>
                       Checkout
                     </Button>
                   </div>
