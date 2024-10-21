@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Button, Popover, Checkbox, Space, Tag, DatePicker } from "antd";
+import { Button, Popover, Checkbox, Space, Tag, Row, Col, DatePicker,Input } from 'antd';
 import { FilterOutlined, PlusOutlined } from "@ant-design/icons";
 import PropTypes from "prop-types";
 
+const { Search } = Input;
+
 //Define filters options in filters (id: checking, label: display in webisite, value: value pass in URL)
 const filterOptions = {
-  gender: [
-    { id: "male", label: "Nam", value: "Male" },
-    { id: "female", label: "Nữ", value: "Female" },
-    { id: "others", label: "Khác", value: "Others" },
+  gender: [ 
+    { id: "male", label: "Male", value: "Male" },
+    { id: "female", label: "Female", value: "Female" },
+    { id: "others", label: "Others", value: "Others" },
   ],
   status: [
     { id: "active", label: "Active", value: "true" },
@@ -33,7 +35,7 @@ function ActionBar({ showModal }) {
     birthday: null,
   });
 
-  //TempFilter for tmp user choose in the filter modal
+  //TempFilters for tmp user choose in the filter modal
   const [tempFilters, setTempFilters] = useState({
     gender: [],
     status: [],
@@ -70,7 +72,6 @@ function ActionBar({ showModal }) {
       search.delete("Statuses");
     }
 
-
   //The same with above but for Gender
   if (object.gender.length > 0) { 
     search.delete("Genders");    
@@ -94,7 +95,6 @@ function ActionBar({ showModal }) {
     });
   };
 
-
   //Remove filters by click close button in filter tag
   const removeFilter = (filterType, filterValue) => {
     //define what what will be removed
@@ -105,25 +105,27 @@ function ActionBar({ showModal }) {
       ),
     };
 
-
     //Change query in URL before change in state
     handleChangeQuery(RemovedTemp);
 
     //Change filters in state to render in Browser
-    setSelectedFilters((prev) => ({
-      ...prev,
-      [filterType]: prev[filterType].filter((id) => id !== filterValue),
-    }));
+    setSelectedFilters(RemovedTemp);
 
     //*IMPORTANT*//
     /*Explaination for above code flow
       Why we dont setSelectedFilters before then use the SelectedFilters to pass to handleChangeQuery function?
       Because react use state hook when set a new value is asynchronous and there no await for this 
       so if pass the SelectedFilters to handleChangeQuery function there is nothing changed 
-      TRY BY YOURSEFT :))) 
+      TRY BY YOURSELF :))) 
     */
 
   };
+
+  const handleSearch = (value) =>{
+    value ? search.set("Keyword", value) : search.delete("Keyword")
+
+    setSearch(search, { replace: true }); 
+  }
 
 
   //Filter modal content
@@ -190,70 +192,81 @@ function ActionBar({ showModal }) {
   );
 
   return (
-    <div
-      style={{
-        padding: 16,
-        borderBottom: "1px solid #f0f0f0",
-        background: "#fff",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h2 style={{ margin: 0 }}>Action Bar</h2>
-        <Space>
-          <Space style={{ flexDirection: "row-reverse" }}>
-            {/* Display selected filters with tags */}
-            {Object.keys(selectedFilters).map((filterType) => {
+    <div>
+      <div style={{ padding: '16px 24px', borderBottom: '1px solid #f0f0f0', background: '#fff' }}>
+      <Row gutter={24} align="middle">
+        <Col flex="none">
+          <h2 style={{ margin: 0, whiteSpace: 'nowrap' }}>Action Bar</h2>
+        </Col>
+        <Col flex="auto">
+          <Space size="middle" style={{ width: '100%', justifyContent: 'flex-end' }}>
+            <Search
+              placeholder="Search..."
+              allowClear
+              onSearch={handleSearch}
+              style={{ width: 300 }}
+            />
+            <Space size="small" style={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              <Popover
+                content={filterContent}
+                title="Filters"
+                trigger="click"
+                visible={popoverVisible}
+                onVisibleChange={(visible) => {
+                  setPopoverVisible(visible);
+                  if (visible) {
+                    setTempFilters(selectedFilters);
+                  }
+                }}
+              >
+                <Button icon={<FilterOutlined />}>
+                  Filter
+                </Button>
+              </Popover>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={showModal}
+                style={{ backgroundColor: "#1890ff" }}
+              >
+                Add Template
+              </Button>
+            </Space>
+          </Space>
+        </Col>
+      </Row>
+      
+      </div>
+      {Object.keys(selectedFilters).length > 0 && (
+        <div style={{ padding: '8px 24px', background: '#fff', borderBottom: '1px solid #f0f0f0' }}>
+          <Row justify="end">
+            <Col>
+              <Space size="small" style={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              {Object.keys(selectedFilters).map((filterType) => {
               // Ensure selectedFilters[filterType] is an array and filterType is not 'birthday'
               if (filterType !== "birthday") {
                 return (selectedFilters[filterType] || []).map((value) => (
-                  <Tag
-                    key={`${filterType}-${value}`}
-                    closable
-                    onClose={() => removeFilter(filterType, value)}
-                    style={{ marginRight: 3 }}
-                  >
-                    {
-                      filterOptions[filterType].find(
-                        (option) => option.value === value
-                      )?.label
-                    }
-                  </Tag>
+                    <Tag
+                      key={`${filterType}-${value}`}
+                      closable
+                      onClose={() => removeFilter(filterType, value)}
+                      style={{ marginRight: 3 }}
+                    >
+                      {
+                        filterOptions[filterType].find(
+                          (option) => option.value === value
+                        )?.label
+                      }
+                    </Tag>
                 ));
               }
               return null; // Return null for 'birthday' filterType
             })}
-          </Space>
-          <Popover
-            content={filterContent}
-            title="Filters"
-            trigger="click"
-            visible={popoverVisible}
-            onVisibleChange={(visible) => {
-              setPopoverVisible(visible);
-              if (visible) {
-                setTempFilters(selectedFilters);
-              }
-            }}
-          >
-            <Button icon={<FilterOutlined />}>Filter</Button>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => showModal()}
-              className="mb-4"
-              style={{ backgroundColor: "#1890ff", marginLeft: "16px" }}
-            >
-              Add Template
-            </Button>
-          </Popover>
-        </Space>
-      </div>
+              </Space>
+            </Col>
+          </Row>
+        </div>
+      )}
     </div>
   );
 }
