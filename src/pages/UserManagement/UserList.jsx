@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Table, Button, Modal, Form, Input, Select, Space, DatePicker, Switch, Upload, message } from "antd";
-import { EditOutlined, DeleteOutlined, UploadOutlined } from "@ant-design/icons";
+import { Table, Button, Modal, Form, Input, Select, Space, DatePicker, Switch, Tabs } from 'antd'
+import { EditOutlined, ClockCircleOutlined, UserOutlined, MailOutlined, PhoneOutlined, LockOutlined, TeamOutlined, CalendarOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { useItems } from "../../hooks/useList";
 import { useSearchParams } from "react-router-dom";
@@ -8,7 +8,9 @@ import ActionBar from "../../components/partial/UserManagement/ActionBar";
 import GlobalLoading from "../../components/global/Loading";
 import { authorizedAxiosInstance } from "../../utils/authorizedAxios";
 import { API_GateWay } from "../../utils/constants";
-const { TextArea } = Input;
+
+
+const { TabPane } = Tabs
 const { Option } = Select;
 
 function UserList() {
@@ -17,6 +19,7 @@ function UserList() {
   const [search, setSearch] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null)
+  const [activeTab, setActiveTab] = useState('1')
 
   //Get Paginations from url
   const pageSizeUrl = search.get("PageSize")
@@ -37,6 +40,8 @@ function UserList() {
   const userList = data?.result?.items ?? [];
   const totalItems = data?.result?.totalItems;
 
+  console.log(userList)
+
   useEffect(() => {
     if (isLoading) {
       setLoading(true);
@@ -48,10 +53,14 @@ function UserList() {
   ]);
 
   const showModal = (record) => {
+    console.log(record)
     if (record) {
       setEditingId(record.id);
       const birthDay = record.birthDay ? dayjs(record.birthDay) : null;
-      form.setFieldsValue({...record, birthDay});
+      const createdAt = record.createdAt ? dayjs(record.createdAt) : null;
+      const updatedAt = record.updatedAt ? dayjs(record.updatedAt) : null;
+
+      form.setFieldsValue({...record, birthDay, createdAt, updatedAt});
     } else {
       setEditingId(null);
       form.resetFields();
@@ -59,35 +68,16 @@ function UserList() {
     setIsModalVisible(true);
   };
 
-  const handleFileChange = (info) => {
-    const file = info.fileList[0]?.originFileObj; // Get the selected file
-
-    if (!file) {
-
-      return;
-    }
-
-    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-    if (!isJpgOrPng) {
-      message.error('You can only upload JPG/PNG files!');
-      return;
-    }
-
-    const isLt2M = file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-      message.error('Image must be smaller than 2MB!');
-      return;
-    }
-
-  };
-
   const handleOk = () => {
+    console.log("ts")
     form.validateFields().then((values) => {
+      console.log(values)
       if(editingId){
         handleUpdateUser(values)
+      }else{
+        handleAddUser(values)
       }
 
-      handleAddUser(values)
     });
   };
 
@@ -118,7 +108,6 @@ function UserList() {
    setIsModalVisible(false)
  }
 
-
   const handleUpdateUser = async (user) => {
      // Create a new FormData object
      const formData = new FormData();
@@ -131,8 +120,9 @@ function UserList() {
      formData.append('IsActive', user.isActive);
      formData.append('FullName', user.fullName);
      formData.append('BirthDay', user.birthDay.format('YYYY-MM-DD'));
-     user.roles.forEach(role => formData.append('Roles', role)); // Append roles individually
- 
+    //  user.roles.forEach(role => formData.append('Roles', role)); // Append roles individually
+    
+    setLoading(true)
     await authorizedAxiosInstance.put(
       `${API_GateWay}/gateway/User/${editingId}`, 
       formData,
@@ -142,6 +132,7 @@ function UserList() {
         }
       }
     )
+    setLoading(false)
     refetch()
     setIsModalVisible(false)
     setEditingId(null)
@@ -152,20 +143,6 @@ function UserList() {
     form.resetFields();
     setEditingId(null);
   };
-
-  const handleDelete = () => {
-    //key
-    // setTemplates((prevTemplates) => {
-    //   const newTemplates = prevTemplates.filter((item) => item.key !== key);
-    //   // Adjust current page if necessary
-    //   const newTotalPages = Math.ceil(newTemplates.length / pageSize);
-    //   if (currentPage > newTotalPages) {
-    //     setCurrentPage(newTotalPages || 1);
-    //   }
-    //   return newTemplates;
-    // });
-  };
-
 
   const handleTableChange = (pagination, filters, sorter) => {
 
@@ -189,14 +166,17 @@ function UserList() {
       title: "Full Name",
       dataIndex: "fullName",
       key: "fullName",
+      fixed: 'left',
       sorter: true,
+      width: '10%',
     },
     {
       title: "Email",
       dataIndex: "email",
       key: "email",
       sorter: true,
-
+      responsive: ['lg'],
+      width: 200,
     },
     {
       title: "Phone Number",
@@ -209,6 +189,8 @@ function UserList() {
       dataIndex: "roles",
       key: "roles",
       sorter: true,
+      responsive: ['lg'],
+      width: 200,
     },
     {
       title: "Birth Day",
@@ -240,6 +222,29 @@ function UserList() {
       dataIndex: "createdAt",
       key: "createdAd",
       sorter: true,
+      
+      render: (text) => {
+        // Kiểm tra xem text có giá trị không
+       if (!text) return '';
+
+       // Chuyển đổi định dạng
+       const date = new Date(text);
+       const day = String(date.getDate()).padStart(2, '0'); 
+       const month = String(date.getMonth() + 1).padStart(2, '0'); 
+       const year = String(date.getFullYear()); 
+
+       const hours = String(date.getHours()).padStart(2, '0'); 
+       const minutes = String(date.getMinutes()).padStart(2, '0'); 
+   
+       return `${hours}:${minutes} ${day}/${month}/${year} `;
+     }
+    },
+    {
+      title: "Updated At",
+      dataIndex: "updatedAt",
+      key: "updatedAd",
+      sorter: true,
+      
       render: (text) => {
         // Kiểm tra xem text có giá trị không
        if (!text) return '';
@@ -264,13 +269,7 @@ function UserList() {
           <Button icon={<EditOutlined />} onClick={() => showModal(record)}>
             Edit
           </Button>
-          <Button
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.key)}
-            danger
-          >
-            Delete
-          </Button>
+          
         </Space>
       ),
     },
@@ -292,6 +291,9 @@ function UserList() {
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} of ${total} items`,
         }}
+        scroll={{
+          x: '1200',
+        }}
         onChange={handleTableChange}
       />
 
@@ -300,85 +302,131 @@ function UserList() {
         open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
-        width={600}
+        width={700}
+        footer={[
+          <Button key="back" onClick={handleCancel}>
+            Cancel
+          </Button>,
+          <Button key="submit" type="primary" onClick={handleOk}>
+            {editingId !== null ? "Update" : "Add"}
+          </Button>,
+        ]}
       >
         <Form form={form} layout="vertical">
-          <Form.Item
-            name="fullName"
-            label="Full Name"
-            rules={[{ required: true, message: 'Please input the full name!' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="email"
-            label="Email"
-            rules={[
-              { required: true, message: 'Please input the email!' },
-              { type: 'email', message: 'Please enter a valid email!' }
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          {!editingId ?  
-          <>
-            <Form.Item
-            name="password"
-            label="Password"
-            rules={[{ required: !editingId, message: 'Please input the password!' }]}
-            >
-              <Input.Password />
-            </Form.Item>
-
-          </> : ""
-          }
-          <Form.Item
-            name="phoneNumber"
-            label="Phone Number"
-            rules={[{ required: true, message: 'Please input the phone number!' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-              name="imageFile"
-              label="Profile Image"
-            >
-              <Upload
-                accept=".png,.jpg,.jpeg"
-                maxCount={1}
-                beforeUpload={() => false} // Prevent automatic upload
-                onChange={handleFileChange} // Handle file selection manually
-                listType="picture"
-              >
-                <Button icon={<UploadOutlined />}>Select File</Button>
-              </Upload>
-          </Form.Item>
-
-          <Form.Item
-            name="isActive"
-            label="Is Active"
-            valuePropName="checked"
-          >
-            <Switch />
-          </Form.Item>
-          <Form.Item
-            name="birthDay"
-            label="Birth Day"
-            rules={[{ required: true, message: 'Please select the birth day!' }]}
-          >
-            <DatePicker />
-          </Form.Item>
-          <Form.Item
-            name="roles"
-            label="Roles"
-            rules={[{ required: true, message: 'Please select at least one role!' }]}
-          >
-            <Select mode="multiple">
-              <Option value="Customer">Customer</Option>
-              <Option value="Admin">Admin</Option>
-              <Option value="Manager">Manager</Option>
-            </Select>
-          </Form.Item>
+          <Tabs activeKey={activeTab} onChange={setActiveTab}>
+            <TabPane tab="Basic Info" key="1">
+              <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
+                <Form.Item
+                  name="fullName"
+                  label="Full Name"
+                  rules={[{ required: true, message: 'Please input the full name!' }]}
+                >
+                  <Input prefix={<UserOutlined />} placeholder="Enter full name" />
+                </Form.Item>
+                <Form.Item
+                  name="email"
+                  label="Email"
+                  rules={[
+                    { required: true, message: 'Please input the email!' },
+                    { type: 'email', message: 'Please enter a valid email!' }
+                  ]}
+                >
+                  <Input prefix={<MailOutlined />} placeholder="Enter email" />
+                </Form.Item>
+                <Form.Item
+                  name="phoneNumber"
+                  label="Phone Number"
+                  rules={[{ required: true, message: 'Please input the phone number!' }]}
+                >
+                  <Input prefix={<PhoneOutlined />} placeholder="Enter phone number" />
+                </Form.Item>
+                <Form.Item
+                  name="birthDay"
+                  label="Birth Day"
+                  rules={[{ required: true, message: 'Please select the birth day!' }]}
+                >
+                  <DatePicker style={{ width: '100%' }} placeholder="Select birth day" prefix={<CalendarOutlined />} />
+                </Form.Item>
+              </Space>
+            </TabPane>
+            <TabPane tab="Account Details" key="2">
+              <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
+                {!editingId ? <>
+                  <Form.Item
+                    name="password"
+                    label="Password"
+                    rules={[{ required: !editingId, message: 'Please input the password!' }]}
+                  >
+                    <Input.Password prefix={<LockOutlined />} placeholder="Enter password" />
+                  </Form.Item>
+                </> : ""}
+                <Form.Item
+                  name="roles"
+                  label="Roles"
+                  rules={[{ required: true, message: 'Please select at least one role!' }]}
+                >
+                  <Select mode="multiple" placeholder="Select roles" prefix={<TeamOutlined />}>
+                    <Option value="User">User</Option>
+                    <Option value="Admin">Admin</Option>
+                    <Option value="Manager">Manager</Option>
+                  </Select>
+                </Form.Item>
+                <Form.Item
+                  name="isActive"
+                  label="Active Status"
+                  valuePropName="checked"
+                >
+                  <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
+                </Form.Item>
+                {editingId && (
+                  <Form.Item 
+                    name="updatedBy"
+                    label="Updated By"
+                  >
+                    <Input prefix={<UserOutlined />} placeholder="Updated By" disabled />
+                  </Form.Item>
+                )}
+              </Space>
+            </TabPane>
+            <TabPane tab="Audit Info" key="3">
+              <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
+                <Form.Item
+                  name="createdAt"
+                  label="Created At"
+                >
+                  <DatePicker 
+                    showTime 
+                    style={{ width: '100%' }} 
+                    disabled={editingId !== null}
+                    prefix={<ClockCircleOutlined />}
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="createdBy"
+                  label="Created By"
+                >
+                  <Input prefix={<UserOutlined />} disabled={editingId !== null} />
+                </Form.Item>
+                <Form.Item
+                  name="updatedAt"
+                  label="Updated At"
+                >
+                  <DatePicker 
+                    showTime 
+                    style={{ width: '100%' }} 
+                    disabled 
+                    prefix={<ClockCircleOutlined />}
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="updatedBy"
+                  label="Updated By"
+                >
+                  <Input prefix={<UserOutlined />} disabled />
+                </Form.Item>
+              </Space>
+            </TabPane>
+          </Tabs>
         </Form>
       </Modal>
     </div>

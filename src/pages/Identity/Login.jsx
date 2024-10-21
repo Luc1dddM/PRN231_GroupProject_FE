@@ -28,9 +28,12 @@ function Login() {
       }
     );
 
+    console.log(res.data.result)
+
     const userInfo = {
       email: res.data.result.email,
       id: res.data.result.userId,
+      userType: res.data.result.userType
     };
 
     handleLoginSuccess(
