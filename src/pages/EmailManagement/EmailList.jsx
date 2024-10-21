@@ -29,12 +29,8 @@ function EmailList() {
   const [editingKey, setEditingKey] = useState();
   const [search, setSearch] = useSearchParams();
 
-  const pageSizeUrl = search.get("PageSize")
-    ? Number(search.get("PageSize"))
-    : 5;
-  const pageNumberUrl = search.get("PageNumber")
-    ? Number(search.get("PageNumber"))
-    : 1;
+  const pageSizeUrl = search.get("PageSize") ? Number(search.get("PageSize")) : 5;
+  const pageNumberUrl = search.get("PageNumber") ? Number(search.get("PageNumber")) : 1;
 
   const [pagination, setPagination] = useState({
     pageNumber: pageNumberUrl,
@@ -134,11 +130,7 @@ function EmailList() {
       dataIndex: "active",
       key: "active",
       sorter: true,
-      render: (active) => (
-        <Tag color={active ? "green" : "red"}>
-          {active ? "Active" : "Inactive"}
-        </Tag>
-      ),
+      render: (active) => <Tag color={active ? "green" : "red"}>{active ? "Active" : "Inactive"}</Tag>,
     },
     {
       title: "Description",
@@ -192,8 +184,7 @@ function EmailList() {
           total: totalElements,
           showSizeChanger: true,
           pageSizeOptions: ["5", "10", "20", "50"],
-          showTotal: (total, range) =>
-            `${range[0]}-${range[1]} of ${total} items`,
+          showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
         }}
         onChange={handleTableChange}
       />
@@ -209,18 +200,10 @@ function EmailList() {
         width={1000}
       >
         <Form form={form} layout="vertical">
-          <Form.Item
-            name="name"
-            label="Name"
-            rules={[{ required: true, message: "Please input the name!" }]}
-          >
+          <Form.Item name="name" label="Name" rules={[{ required: true, message: "Please input the name!" }]}>
             <Input />
           </Form.Item>
-          <Form.Item
-            name="subject"
-            label="Subject"
-            rules={[{ required: true, message: "Please input the subject!" }]}
-          >
+          <Form.Item name="subject" label="Subject" rules={[{ required: true, message: "Please input the subject!" }]}>
             <Input />
           </Form.Item>
           <Form.Item
@@ -238,11 +221,7 @@ function EmailList() {
           >
             <TextArea rows={4} />
           </Form.Item>
-          <Form.Item
-            name="category"
-            label="Category"
-            rules={[{ required: true, message: "Please select the category!" }]}
-          >
+          <Form.Item name="category" label="Category" rules={[{ required: true, message: "Please select the category!" }]}>
             <Select>
               <Option value="Notification">Notification</Option>
               <Option value="Coupon">Coupon</Option>

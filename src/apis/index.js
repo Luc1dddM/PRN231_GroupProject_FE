@@ -1,5 +1,5 @@
 import { authorizedAxiosInstance } from "../utils/authorizedAxios";
-import { API_ROOT } from "../utils/constants";
+import { API_GateWay } from "../utils/constants";
 
 export const handleLogoutApi = () => {
   localStorage.removeItem("accessToken");
@@ -9,7 +9,7 @@ export const handleLogoutApi = () => {
 
 export const refreshTokenApi = async (accessToken, refreshToken) => {
   return await authorizedAxiosInstance.post(
-    `${API_ROOT}/api/Identity/RenewToken`,
+    `${API_GateWay}/api/Identity/RenewToken`,
     {
       token: accessToken,
       refreshToken: refreshToken,

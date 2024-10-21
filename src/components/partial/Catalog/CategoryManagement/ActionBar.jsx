@@ -1,21 +1,17 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Button, Popover, Checkbox, Space, Tag, Row, Col, DatePicker,Input } from 'antd';
+import {Button, Popover, Checkbox, Space, Tag, Row, Col, DatePicker,Input } from "antd";
 import { FilterOutlined, PlusOutlined } from "@ant-design/icons";
-import { authorizedAxiosInstance } from "../../../utils/authorizedAxios";
-import { API_GateWay } from "../../../utils/constants";
-import { toast } from "react-toastify";
 import PropTypes from "prop-types";
-import Test from "../../../pages/Test";
+
 
 const { Search } = Input;
-
 //Define filters options in filters (id: checking, label: display in webisite, value: value pass in URL)
 const filterOptions = {
-  gender: [ 
-    { id: "male", label: "Male", value: "Male" },
-    { id: "female", label: "Female", value: "Female" },
-    { id: "others", label: "Others", value: "Others" },
+  type: [
+    { id: "brand", label: "Brand", value: "Brand" },
+    { id: "device", label: "Device", value: "Device" },
+    { id: "color", label: "Color", value: "Color" },
   ],
   status: [
     { id: "active", label: "Active", value: "true" },
@@ -34,16 +30,14 @@ function ActionBar({ showModal }) {
 
   //seletedFilters for after apply button
   const [selectedFilters, setSelectedFilters] = useState({
-    gender: [],
+    type: [],
     status: statusIds ?? [],
-    birthday: null,
   });
 
-  //TempFilters for tmp user choose in the filter modal
+  //TempFilter for tmp user choose in the filter modal
   const [tempFilters, setTempFilters] = useState({
-    gender: [],
+    type: [],
     status: [],
-    birthday: null,
   });
 
   //Status modal (open/close)
@@ -76,15 +70,16 @@ function ActionBar({ showModal }) {
       search.delete("Statuses");
     }
 
+
   //The same with above but for Gender
-  if (object.gender.length > 0) { 
-    search.delete("Genders");    
+  if (object.type.length > 0) { 
+    search.delete("Type");    
  
-    object.gender.forEach((gender) => {
-      search.append("Genders", gender);
+    object.type.forEach((type) => {
+      search.append("Type", type);
     });
   } else {
-    search.delete("Genders");
+    search.delete("Type");
   }
 
 
@@ -94,10 +89,11 @@ function ActionBar({ showModal }) {
   //Handle reset button
   const handleReset = () => {
     setTempFilters({
-      gender: [],
+      type: [],
       status: [],
     });
   };
+
 
   //Remove filters by click close button in filter tag
   const removeFilter = (filterType, filterValue) => {
@@ -115,12 +111,14 @@ function ActionBar({ showModal }) {
     //Change filters in state to render in Browser
     setSelectedFilters(RemovedTemp);
 
+
+  
     //*IMPORTANT*//
     /*Explaination for above code flow
       Why we dont setSelectedFilters before then use the SelectedFilters to pass to handleChangeQuery function?
       Because react use state hook when set a new value is asynchronous and there no await for this 
       so if pass the SelectedFilters to handleChangeQuery function there is nothing changed 
-      TRY BY YOURSELF :))) 
+      TRY BY YOURSEFT :))) 
     */
 
   };
@@ -131,38 +129,6 @@ function ActionBar({ showModal }) {
     setSearch(search, { replace: true }); 
   }
 
-  const handleImportUser = async (formData) => {
-    const res = await authorizedAxiosInstance.post(
-        `${API_GateWay}/gateway/User/ImportUser`, 
-          formData,
-        {
-          headers: {
-              'Content-Type': 'multipart/form-data' // Specify the content type
-          },
-          responseType: "blob",
-        }
-      )
-
-    if(res.data.size > 0){
-        const blob = new Blob([res.data], {
-            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          });
-          const url = window.URL.createObjectURL(blob);
-          const outputFilename = `${Date.now()}.xlsx`;
-          const a = document.createElement("a");
-          a.style.display = "none";
-          a.href = url;
-          a.setAttribute("download", outputFilename);
-          // the filename you want
-          document.body.appendChild(a);
-          a.click();
-
-        toast.error("Please Check The Errors File")
-    }else{
-        toast.success("Import User Successfully")
-    }
-  }
-
 
   //Filter modal content
   const filterContent = (
@@ -170,14 +136,14 @@ function ActionBar({ showModal }) {
       <h4 style={{ marginBottom: 16 }}>Filter Options</h4>
 
       <div style={{ marginBottom: 16 }}>
-        <h4>Giới tính</h4>
+        <h4>Loại Phân Loại</h4>
         <Checkbox.Group
-          value={tempFilters.gender}
+          value={tempFilters.type}
           onChange={(checkedValues) =>
-            handleFilterChange("gender", checkedValues)
+            handleFilterChange("type", checkedValues)
           }
         >
-          {filterOptions.gender.map((option) => (
+          {filterOptions.type.map((option) => (
             <Checkbox key={option.id} value={option.value}>
               {option.label}
             </Checkbox>
@@ -199,15 +165,6 @@ function ActionBar({ showModal }) {
             </Checkbox>
           ))}
         </Checkbox.Group>
-      </div>
-
-      <div style={{ marginBottom: 16 }}>
-        <h4>Ngày sinh</h4>
-        <DatePicker
-          style={{ width: "100%" }}
-          value={tempFilters.birthday}
-          onChange={(date) => handleFilterChange("birthday", date)}
-        />
       </div>
 
       <div
@@ -263,10 +220,10 @@ function ActionBar({ showModal }) {
                 type="primary"
                 icon={<PlusOutlined />}
                 onClick={showModal}
+                style={{ backgroundColor: "#1890ff" }}
               >
                 Add Template
               </Button>
-              <Test handleSubmit={handleImportUser}></Test>
             </Space>
           </Space>
         </Col>
@@ -279,8 +236,7 @@ function ActionBar({ showModal }) {
             <Col>
               <Space size="small" style={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               {Object.keys(selectedFilters).map((filterType) => {
-              // Ensure selectedFilters[filterType] is an array and filterType is not 'birthday'
-              if (filterType !== "birthday") {
+              // Ensure selectedFilters[filterType] is an array and filterType is not 'birthday'           
                 return (selectedFilters[filterType] || []).map((value) => (
                     <Tag
                       key={`${filterType}-${value}`}
@@ -295,8 +251,6 @@ function ActionBar({ showModal }) {
                       }
                     </Tag>
                 ));
-              }
-              return null; // Return null for 'birthday' filterType
             })}
               </Space>
             </Col>

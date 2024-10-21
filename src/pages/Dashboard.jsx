@@ -14,6 +14,7 @@ function Dashboard() {
       const res = await authorizedAxiosInstance.get(
         `${API_GateWay}/gateway/User/${userId}`
       );
+      console.log(res.data.result)
       setUser(res.data.result);
     };
     fetchData().then(() => {
@@ -26,7 +27,9 @@ function Dashboard() {
       {loading ? (
         <Spin /> // Show spinner when loading is true
       ) : (
-        <>{user.fullName}</> // Show user info when loading is false
+        <>
+          <img src={user.imageBase64} alt="Girl in a jacket" width="500" height="600" />
+        </> // Show user info when loading is false
       )}
     </>
   );
