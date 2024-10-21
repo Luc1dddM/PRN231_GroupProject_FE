@@ -1,8 +1,10 @@
-import { useState } from "react";
-import { Table, Button, Modal, Form, Input, Select, Space } from "antd";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { useState, useEffect } from "react";
+import { Table, Button, Modal, Form, Input, Select, Space, DatePicker, Switch, Upload, message  } from "antd";
+import { EditOutlined, DeleteOutlined, UploadOutlined} from "@ant-design/icons";
 import { useItems } from "../../../hooks/useList";
 import { useSearchParams } from "react-router-dom";
+import GlobalLoading from "../../../components/global/Loading";
+
 import ActionBar from "../../../components/partial/Catalog/CategoryManagement/ActionBar";
 
 const { TextArea } = Input;
@@ -12,6 +14,8 @@ function CategoryList() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState();
+  const [loading, setLoading] = useState(false);
+
   const [search, setSearch] = useSearchParams();
 
   //Get List Student by custom UseItems Hook
@@ -28,10 +32,21 @@ function CategoryList() {
     pageSize: pageSizeUrl,
   });
 
-  const response = useItems("/categories", "CategoryList", pagination);
-  const categoryList = response.data?.categories?.result?.items ?? [];
+  const {data, refetch, isLoading} = useItems("/categories", "CategoryList", pagination);
+  console.log(data)
+  const categoryList = data?.categories?.result?.items ?? [];
   // Calculate the total number of pages
-  const totalItems = response.data?.categories?.result?.totalItems;
+  const totalItems = data?.categories?.result?.totalItems;
+
+  useEffect(() => {
+    if (isLoading) {
+      setLoading(true);
+    } else {
+      setLoading(false);
+    }
+  }, [
+    isLoading,
+  ]);
 
   const showModal = (record) => {
     if (record) {
@@ -68,13 +83,20 @@ function CategoryList() {
     // });
   };
 
-  const handleTableChange = (pagination) => {
+  const handleTableChange = (pagination, filters, sorter) => {
     setPagination({
       pageNumber: pagination.current,
       pageSize: pagination.pageSize,
     });
+
+
+    if(sorter.order){
+      console.log("hello")
+      search.set("SortBy", sorter.columnKey)
+      search.set("SortOrder", sorter.order)
+    }
+
     search.set("PageNumber", String(pagination.current));
-    setSearch(`?${search.toString()}`, { replace: true });
     search.set("PageSize", String(pagination.pageSize));
     setSearch(`?${search.toString()}`, { replace: true });
   };
@@ -84,17 +106,41 @@ function CategoryList() {
       title: "Category Name",
       dataIndex: "name",
       key: "name",
+      sorter: true,
     },
     {
       title: "Category Type",
       dataIndex: "type",
       key: "type",
+      sorter: true,
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
+      sorter: true,
       render: (status) => <span>{status ? "Active" : "Disabled"}</span>,
+    },
+    {
+      title: "Created At",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      sorter: true,
+      render: (text) => {
+        // Kiểm tra xem text có giá trị không
+       if (!text) return '';
+
+       // Chuyển đổi định dạng
+       const date = new Date(text);
+       const day = String(date.getDate()).padStart(2, '0'); 
+       const month = String(date.getMonth() + 1).padStart(2, '0'); 
+       const year = String(date.getFullYear()); 
+
+       const hours = String(date.getHours()).padStart(2, '0'); 
+       const minutes = String(date.getMinutes()).padStart(2, '0'); 
+   
+       return `${hours}:${minutes} ${day}/${month}/${year} `;
+     }
     },
     {
       title: "Actions",
@@ -110,6 +156,7 @@ function CategoryList() {
   ];
   return (
     <div className="container mx-auto p-4">
+      <GlobalLoading isLoading={loading} />
       <ActionBar showModal={showModal} />
 
       <Table
