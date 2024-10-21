@@ -1,25 +1,37 @@
-import { Layout } from "antd";
+import { Layout, Button } from "antd";
 import Logo from "./Logo";
 import MenuList from "./MenuList";
 import { useState } from "react";
 import ToggleThemeButton from "./ToggleThemeButton";
-
+import { CloseOutlined } from "@ant-design/icons";
+import PropTypes from "prop-types";
 const { Sider } = Layout;
 
-function Sidebar() {
+function Sidebar({ onClose }) {
   const [darkTheme, setDarkTheme] = useState(true);
+
   const toggleTheme = () => {
     setDarkTheme(!darkTheme);
   };
 
+  const closeButtonColor = darkTheme ? "text-white" : "text-black";
+
   return (
     <Layout className="min-h-screen">
-      <Sider
-        theme={darkTheme ? "dark" : "light"}
-        className="text-white h-screen"
-      >
+      <Sider theme={darkTheme ? "dark" : "light"} className="h-screen">
         <div className="flex flex-col h-full">
-          <Logo />
+          <div className="flex justify-between items-center p-2">
+            <div className="ml-5 flex-grow flex justify-center">
+              {" "}
+              <Logo />
+            </div>
+            <Button
+              type="text"
+              icon={<CloseOutlined className={closeButtonColor} />}
+              onClick={onClose}
+              className={`p-0 ${closeButtonColor} ml-2`}
+            />
+          </div>
           <div className="flex-1 overflow-y-auto scrollbar-hidden">
             <MenuList darkTheme={darkTheme} />
           </div>
@@ -32,7 +44,6 @@ function Sidebar() {
         </div>
       </Sider>
 
-      {/* CSS tùy chỉnh để ẩn thanh cuộn */}
       <style>
         {`
           /* Ẩn thanh cuộn */
@@ -48,5 +59,8 @@ function Sidebar() {
     </Layout>
   );
 }
+Sidebar.propTypes = {
+  onClose: PropTypes.func.isRequired,
+};
 
 export default Sidebar;
