@@ -1,19 +1,19 @@
 import { useQuery } from "react-query";
 import { useSearchParams } from "react-router-dom";
 import { authorizedAxiosInstance } from "../utils/authorizedAxios";
-import { API_ROOT } from "../utils/constants";
+import { API_GateWay } from "../utils/constants";
 
 export function useItems(url, uniqueKey, pagination) {
   const [search] = useSearchParams({
-    pageNumber: String(pagination.pageNumber),
-    pageSize: String(pagination.pageSize),
+    PageNumber: String(pagination.pageNumber),
+    PageSize: String(pagination.pageSize),
   });
 
-  return useQuery(
+  const query = useQuery(
     [uniqueKey, search.toString()],
     () =>
       authorizedAxiosInstance
-        .get(`${API_ROOT}${url}`, {
+        .get(`${API_GateWay}${url}`, {
           params: search,
         })
         .then((res) => res.data),
@@ -22,4 +22,6 @@ export function useItems(url, uniqueKey, pagination) {
       retry: false,
     }
   );
+
+  return { ...query, refetch: query.refetch }; // Return refetch
 }

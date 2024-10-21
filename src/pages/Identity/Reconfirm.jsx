@@ -3,7 +3,7 @@ import { Form, Input, Button, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
 import { MailOutlined, LoginOutlined } from "@ant-design/icons";
 import { authorizedAxiosInstance } from "../../utils/authorizedAxios";
-import { API_ROOT } from "../../utils/constants";
+import { API_GateWay } from "../../utils/constants";
 
 const { Title, Paragraph } = Typography;
 
@@ -13,12 +13,9 @@ const EmailReconfirm = () => {
   const nav = useNavigate();
 
   const onFinish = async (values) => {
-    await authorizedAxiosInstance.post(
-      `${API_ROOT}/api/Identity/ReConfirmAccount`,
-      {
-        emailAddress: values.email,
-      }
-    );
+    await authorizedAxiosInstance.post(`${API_GateWay}/api/Identity/ReConfirmAccount`, {
+      emailAddress: values.email,
+    });
     setIsSubmitted(true);
     form.resetFields();
   };
@@ -29,19 +26,10 @@ const EmailReconfirm = () => {
 
   if (isSubmitted) {
     return (
-      <div
-        style={{ maxWidth: "400px", margin: "40px auto", textAlign: "center" }}
-      >
+      <div style={{ maxWidth: "400px", margin: "40px auto", textAlign: "center" }}>
         <Title level={2}>Email Reconfirmed</Title>
-        <Paragraph>
-          Thank you for reconfirming your email address. You should receive a
-          confirmation message shortly.
-        </Paragraph>
-        <Button
-          type="primary"
-          icon={<LoginOutlined />}
-          onClick={handleBackToLogin}
-        >
+        <Paragraph>Thank you for reconfirming your email address. You should receive a confirmation message shortly.</Paragraph>
+        <Button type="primary" icon={<LoginOutlined />} onClick={handleBackToLogin}>
           Back to Login
         </Button>
       </div>
@@ -56,20 +44,11 @@ const EmailReconfirm = () => {
       <Paragraph style={{ textAlign: "center" }}>
         Please enter your email address to reconfirm your account.
         <br />
-        <Button
-          type="link"
-          icon={<LoginOutlined />}
-          onClick={handleBackToLogin}
-        >
+        <Button type="link" icon={<LoginOutlined />} onClick={handleBackToLogin}>
           Back to Login
         </Button>
       </Paragraph>
-      <Form
-        form={form}
-        name="reconfirm_email"
-        onFinish={onFinish}
-        layout="vertical"
-      >
+      <Form form={form} name="reconfirm_email" onFinish={onFinish} layout="vertical">
         <Form.Item
           name="email"
           rules={[
@@ -77,10 +56,7 @@ const EmailReconfirm = () => {
             { type: "email", message: "Please enter a valid email address!" },
           ]}
         >
-          <Input
-            prefix={<MailOutlined className="site-form-item-icon" />}
-            placeholder="Your email address"
-          />
+          <Input prefix={<MailOutlined className="site-form-item-icon" />} placeholder="Your email address" />
         </Form.Item>
 
         <Form.Item>

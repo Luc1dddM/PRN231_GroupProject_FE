@@ -11,6 +11,14 @@ import ForgetPasswordConfirm from "./pages/Identity/ForgotPasswordConfirm";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { queryClient } from "./utils/authorizedAxios";
 import UserList from "./pages/UserManagement/UserList";
+import CategoryList from "./pages/Catalog/CategoryManagement/CategoryList";
+import ShoppingCart from "./pages/ShoppingCart/CartList";
+import CustomerChatbox from "./pages/ChatBox/CustomerChatBox";
+import AdminChatBox from "./pages/ChatBox/AdminChatBox";
+import EmailList from "./pages/EmailManagement/EmailList";
+import ShoppingCart from "./pages/ShoppingCart/Cart";
+import RolePermissionManager from "./pages/Identity/RolePermissionManagement";
+import ProductDetail from "./pages/Catalog/ProductDetail";
 
 const ProtectedRoutes = () => {
   const user = JSON.parse(localStorage.getItem("userInfo"));
@@ -30,6 +38,13 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <Routes>
           <Route path="/User/" element={<UserList />}></Route>
+
+          <Route path="/Category/" element={<CategoryList />}></Route>
+
+          <Route path="/Email/" element={<EmailList />}></Route>
+          <Route path="/Cart" element={<ShoppingCart />} />
+          <Route path="/ProductDetail/:id" element={<ProductDetail />} />
+          <Route path="/Admin/RolePermission" element={<RolePermissionManager />}></Route>
           <Route path="/" element={<Navigate to="/login" replace={true} />} />
           <Route element={<UnAuthorizedRoutes />}>
             <Route path="/login" element={<Login />} />
@@ -37,6 +52,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/forgotpassword" element={<ForgotPassword />} />
             <Route path="/ResetPassword" element={<ForgetPasswordConfirm />} />
+            <Route path="/CartList" element={<ShoppingCart />} />
           </Route>
 
           <Route element={<ProtectedRoutes />}>
@@ -49,6 +65,9 @@ function App() {
               }
             />
           </Route>
+          <Route path="/CustomerChatBox/:groupId" element={<CustomerChatbox />} />
+          <Route path="/AdminChatBox/:groupId?" element={<AdminChatBox />} />
+
         </Routes>
       </QueryClientProvider>
     </GoogleOAuthProvider>

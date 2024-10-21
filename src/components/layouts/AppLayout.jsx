@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { handleLogoutApi } from "../../apis";
 import {
@@ -51,6 +51,8 @@ function AppLayout() {
       icon: <SettingOutlined />,
       onClick: () => logout(),
     },
+
+
   ];
 
   const logout = () => {
@@ -138,7 +140,7 @@ function AppLayout() {
       </Footer>
     </Layout>
   );
-}
+};
 
 AppLayout.propTypes = {
   children: PropTypes.node,

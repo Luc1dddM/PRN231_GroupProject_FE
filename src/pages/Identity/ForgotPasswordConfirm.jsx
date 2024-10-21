@@ -2,7 +2,7 @@ import { Form, Input, Button, Typography, Layout, message } from "antd";
 import { LockOutlined } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import { authorizedAxiosInstance } from "../../utils/authorizedAxios";
-import { API_ROOT } from "../../utils/constants";
+import { API_GateWay } from "../../utils/constants";
 import { useEffect } from "react";
 
 const { Title } = Typography;
@@ -23,14 +23,11 @@ function ForgetPasswordConfirm() {
   }, [location, form]);
 
   const onFinish = async (values) => {
-    await authorizedAxiosInstance.post(
-      `${API_ROOT}/api/Identity/ResetPassword`,
-      {
-        email: values.email,
-        code: values.code,
-        newPassword: values.password,
-      }
-    );
+    await authorizedAxiosInstance.post(`${API_GateWay}/api/Identity/ResetPassword`, {
+      email: values.email,
+      code: values.code,
+      newPassword: values.password,
+    });
 
     message.success("Password reset successfully!");
     navigate("/login");
@@ -58,19 +55,10 @@ function ForgetPasswordConfirm() {
           }}
         >
           <div style={{ textAlign: "center", marginBottom: "24px" }}>
-            <img
-              src="/placeholder.svg?height=48&width=48"
-              alt="ToolShop Logo"
-              style={{ width: "48px", height: "48px" }}
-            />
+            <img src="/placeholder.svg?height=48&width=48" alt="ToolShop Logo" style={{ width: "48px", height: "48px" }} />
             <Title level={2}>Reset Password</Title>
           </div>
-          <Form
-            form={form}
-            name="resetPassword"
-            onFinish={onFinish}
-            layout="vertical"
-          >
+          <Form form={form} name="resetPassword" onFinish={onFinish} layout="vertical">
             <Form.Item
               name="password"
               label="New Password"
@@ -82,10 +70,7 @@ function ForgetPasswordConfirm() {
                 },
               ]}
             >
-              <Input.Password
-                prefix={<LockOutlined />}
-                placeholder="New Password"
-              />
+              <Input.Password prefix={<LockOutlined />} placeholder="New Password" />
             </Form.Item>
             <Form.Item
               name="confirmPassword"
@@ -101,35 +86,22 @@ function ForgetPasswordConfirm() {
                     if (!value || getFieldValue("password") === value) {
                       return Promise.resolve();
                     }
-                    return Promise.reject(
-                      new Error("The two passwords do not match!")
-                    );
+                    return Promise.reject(new Error("The two passwords do not match!"));
                   },
                 }),
               ]}
             >
-              <Input.Password
-                prefix={<LockOutlined />}
-                placeholder="Confirm New Password"
-              />
+              <Input.Password prefix={<LockOutlined />} placeholder="Confirm New Password" />
             </Form.Item>
             <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                style={{ width: "100%" }}
-              >
+              <Button type="primary" htmlType="submit" style={{ width: "100%" }}>
                 Reset Password
               </Button>
             </Form.Item>
           </Form>
           <div style={{ textAlign: "center", marginTop: "16px" }}>
             Remember your password?{" "}
-            <Button
-              type="link"
-              onClick={() => navigate("/login")}
-              style={{ padding: 0 }}
-            >
+            <Button type="link" onClick={() => navigate("/login")} style={{ padding: 0 }}>
               Log in
             </Button>
           </div>
