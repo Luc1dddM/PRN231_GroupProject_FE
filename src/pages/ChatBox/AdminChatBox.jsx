@@ -115,6 +115,16 @@ export default function AdminChatBox() {
     fetchData();
   }, [groupId])
 
+  useEffect(()=>{
+    const outGroup = async () =>{
+      if(connection){
+        connection.stop()
+      }
+    }
+    outGroup()
+  },[groupId])
+
+
   useEffect(() => {
     window.addEventListener("popstate", () => {
       window.location.reload();
