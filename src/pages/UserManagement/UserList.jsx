@@ -36,7 +36,7 @@ function UserList() {
   });
 
   //Get List Student and ralative info by custom UseItems Hook
-  const {data, refetch, isLoading} = useItems("/api/User", "UserList", pagination);
+  const {data, refetch, isLoading} = useItems("/gateway/User", "UserList", pagination);
   const userList = data?.result?.items ?? [];
   const totalItems = data?.result?.totalItems;
 

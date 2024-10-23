@@ -9,7 +9,7 @@ import PropTypes from "prop-types";
 import Test from "../../../pages/Test";
 
 const { Search } = Input;
-
+const { RangePicker } = DatePicker;
 //Define filters options in filters (id: checking, label: display in webisite, value: value pass in URL)
 const filterOptions = {
   gender: [ 
@@ -27,6 +27,9 @@ function ActionBar({ showModal }) {
 
   const statusValues = search.getAll("Statuses") ?? []; // Get array of statuses from URL (if any)
 
+  const genderValues = search.getAll("Genders") ?? []; // Get array of statuses from URL (if any)
+
+
   //Change statusValues to statusIds to assign in state (render by id not by value)
   const statusIds = filterOptions.status
     .filter((option) => statusValues.includes(option.value))
@@ -43,7 +46,9 @@ function ActionBar({ showModal }) {
   const [tempFilters, setTempFilters] = useState({
     gender: [],
     status: [],
-    birthday: null,
+    birthdayFrom: null,
+    birthdayTo: null,
+
   });
 
   //Status modal (open/close)
@@ -203,7 +208,7 @@ function ActionBar({ showModal }) {
 
       <div style={{ marginBottom: 16 }}>
         <h4>Ngày sinh</h4>
-        <DatePicker
+        <RangePicker
           style={{ width: "100%" }}
           value={tempFilters.birthday}
           onChange={(date) => handleFilterChange("birthday", date)}

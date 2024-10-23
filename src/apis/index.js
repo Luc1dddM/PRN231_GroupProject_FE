@@ -8,8 +8,9 @@ export const handleLogoutApi = () => {
 };
 
 export const refreshTokenApi = async (accessToken, refreshToken) => {
+  console.log("test")
   return await authorizedAxiosInstance.post(
-    `${API_GateWay}/api/Identity/RenewToken`,
+    `${API_GateWay}"/gateway/Identity/RenewToken`,
     {
       token: accessToken,
       refreshToken: refreshToken,

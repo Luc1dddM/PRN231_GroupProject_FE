@@ -48,6 +48,7 @@ authorizedAxiosInstance.interceptors.response.use(
     const originalRequest = error.config;
     if (error.response?.status === 410 && originalRequest) {
       if (!refreshTokenPromise) {
+        console.log("rte")
         const accessToken = localStorage.getItem("accessToken");
         const refreshToken = localStorage.getItem("refreshToken");
         refreshTokenPromise = refreshTokenApi(accessToken, refreshToken)
@@ -59,8 +60,9 @@ authorizedAxiosInstance.interceptors.response.use(
           })
           // eslint-disable-next-line no-unused-vars
           .catch((_error) => {
+            print(_error)
             handleLogoutApi();
-            location.href = "/login";
+            // location.href = "/login";
           })
           .finally(() => {
             refreshTokenPromise = null;
