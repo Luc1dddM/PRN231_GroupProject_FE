@@ -9,7 +9,6 @@ import GlobalLoading from "../../components/global/Loading";
 import { authorizedAxiosInstance } from "../../utils/authorizedAxios";
 import { API_GateWay } from "../../utils/constants";
 
-
 const { TabPane } = Tabs
 const { Option } = Select;
 
@@ -20,6 +19,8 @@ function UserList() {
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null)
   const [activeTab, setActiveTab] = useState('1')
+  const [roles, setRoles] = useState([]);
+
 
   //Get Paginations from url
   const pageSizeUrl = search.get("PageSize")
@@ -49,6 +50,20 @@ function UserList() {
   }, [
     isLoading,
   ]);
+
+  useEffect(() => {
+    setLoading(true);
+    const fetchData = async () => {
+      const rolesRes = await authorizedAxiosInstance.get(
+        `${API_GateWay}/gateway/Identity/GetRolesManager`
+      );
+      setRoles(rolesRes.data.result);
+     
+    };
+    fetchData().then(() => {
+      setLoading(false);
+    });
+  }, []);
 
   const showModal = (record) => {
     if (record) {
@@ -115,7 +130,7 @@ function UserList() {
      formData.append('IsActive', user.isActive);
      formData.append('FullName', user.fullName);
      formData.append('BirthDay', user.birthDay.format('YYYY-MM-DD'));
-    //  user.roles.forEach(role => formData.append('Roles', role)); // Append roles individually
+     user.roles.forEach(role => formData.append('Roles', role)); // Append roles individually
     
     setLoading(true)
     await authorizedAxiosInstance.put(
@@ -126,7 +141,9 @@ function UserList() {
             'Content-Type': 'multipart/form-data' // Specify the content type
         }
       }
-    )
+    ).finally(() =>{
+      setLoading(false)
+    })
     setLoading(false)
     refetch()
     setIsModalVisible(false)
@@ -362,9 +379,9 @@ function UserList() {
                   rules={[{ required: true, message: 'Please select at least one role!' }]}
                 >
                   <Select mode="multiple" placeholder="Select roles" prefix={<TeamOutlined />}>
-                    <Option value="User">User</Option>
-                    <Option value="Admin">Admin</Option>
-                    <Option value="Manager">Manager</Option>
+                    {roles.map((item) => {return(
+                      <Option key={item.id} value={item.name}>{item.name}</Option>
+                    )})}
                   </Select>
                 </Form.Item>
                 <Form.Item

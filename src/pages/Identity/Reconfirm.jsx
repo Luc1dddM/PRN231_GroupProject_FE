@@ -4,17 +4,22 @@ import { useNavigate } from "react-router-dom";
 import { MailOutlined, LoginOutlined } from "@ant-design/icons";
 import { authorizedAxiosInstance } from "../../utils/authorizedAxios";
 import { API_GateWay } from "../../utils/constants";
+import GlobalLoading from "../../components/global/Loading"; 
 
 const { Title, Paragraph } = Typography;
 
 const EmailReconfirm = () => {
+  const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const nav = useNavigate();
 
   const onFinish = async (values) => {
-    await authorizedAxiosInstance.post(`${API_GateWay}/api/Identity/ReConfirmAccount`, {
+    setLoading(true)
+    await authorizedAxiosInstance.post(`${API_GateWay}/gateway/Identity/ReConfirmAccount`, {
       emailAddress: values.email,
+    }).finally(() => {
+      setLoading(false)
     });
     setIsSubmitted(true);
     form.resetFields();
@@ -38,6 +43,7 @@ const EmailReconfirm = () => {
 
   return (
     <div style={{ maxWidth: "400px", margin: "40px auto", padding: "20px" }}>
+      <GlobalLoading isLoading={loading} />
       <Title level={2} style={{ textAlign: "center" }}>
         Reconfirm Your Email
       </Title>
