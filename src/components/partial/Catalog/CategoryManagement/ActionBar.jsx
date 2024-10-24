@@ -3,6 +3,8 @@ import { useSearchParams } from "react-router-dom";
 import {Button, Popover, Checkbox, Space, Tag, Row, Col, DatePicker,Input } from "antd";
 import { FilterOutlined, PlusOutlined } from "@ant-design/icons";
 import PropTypes from "prop-types";
+import { authorizedAxiosInstance } from "../../../../utils/authorizedAxios";
+import { API_GateWay } from "../../../../utils/constants";
 
 
 const { Search } = Input;
@@ -130,6 +132,40 @@ function ActionBar({ showModal }) {
   }
 
 
+  const handleExportCategories = async () =>{
+    const res = await authorizedAxiosInstance.post(
+      `${API_GateWay}/gateway/Categories/ExportCategories`, 
+      {
+        parameters: {
+          keyword: search.get("Keyword"),
+          statuses: search.getAll("Statuses"),
+          types: search.getAll("Type"),
+          sortBy: search.get("SortBy"),
+          sortOrder: search.get("SortOrder"),
+        }
+      },
+        {
+          responseType: "blob",
+        }
+    )
+console.log(res.data.size)
+  if(res.data.size > 0){
+        const blob = new Blob([res.data], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+          const url = window.URL.createObjectURL(blob);
+          const outputFilename = `${Date.now()}.xlsx`;
+          const a = document.createElement("a");
+          a.style.display = "none";
+          a.href = url;
+          a.setAttribute("download", outputFilename);
+          // the filename you want
+          document.body.appendChild(a);
+          a.click();
+    }
+  }
+
+
   //Filter modal content
   const filterContent = (
     <div style={{ width: 300 }}>
@@ -222,7 +258,14 @@ function ActionBar({ showModal }) {
                 onClick={showModal}
                 style={{ backgroundColor: "#1890ff" }}
               >
-                Add Template
+                Add
+              </Button>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={handleExportCategories}
+              >
+                Export Category
               </Button>
             </Space>
           </Space>

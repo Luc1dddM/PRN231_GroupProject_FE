@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
-import { Table, Button, Modal, Form, Input, Select, Space, DatePicker, Switch, Upload, message  } from "antd";
-import { EditOutlined, DeleteOutlined, UploadOutlined} from "@ant-design/icons";
+import { Table, Button, Modal, Form, Input, Select, Space, DatePicker, Switch, Upload, message, Tabs   } from "antd";
+import { EditOutlined, ClockCircleOutlined, DeleteOutlined, UploadOutlined, UserOutlined,MailOutlined, PhoneOutlined, LockOutlined, TeamOutlined, CalendarOutlined} from "@ant-design/icons";
 import { useItems } from "../../../hooks/useList";
 import { useSearchParams } from "react-router-dom";
 import GlobalLoading from "../../../components/global/Loading";
+import { API_GateWay } from "../../../utils/constants";
+import { authorizedAxiosInstance } from "../../../utils/authorizedAxios";
 
 import ActionBar from "../../../components/partial/Catalog/CategoryManagement/ActionBar";
 
+const { TabPane } = Tabs
 const { TextArea } = Input;
 const { Option } = Select;
 
@@ -15,8 +18,15 @@ function CategoryList() {
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState();
   const [loading, setLoading] = useState(false);
-
+  const [activeTab, setActiveTab] = useState('1')
   const [search, setSearch] = useSearchParams();
+  const Types = [
+      { id: "brand", label: "Brand", value: "Brand" },
+      { id: "device", label: "Device", value: "Device" },
+      { id: "color", label: "Color", value: "Color" },
+    ]
+
+  
 
   //Get List Student by custom UseItems Hook
   //Get Paginations from url
@@ -32,7 +42,7 @@ function CategoryList() {
     pageSize: pageSizeUrl,
   });
 
-  const {data, refetch, isLoading} = useItems("/categories", "CategoryList", pagination);
+  const {data, refetch, isLoading} = useItems("/gateway/categories", "CategoryList", pagination);
   console.log(data)
   const categoryList = data?.categories?.result?.items ?? [];
   // Calculate the total number of pages
@@ -48,9 +58,12 @@ function CategoryList() {
     isLoading,
   ]);
 
+
+
   const showModal = (record) => {
     if (record) {
-      setEditingKey(record.key);
+      setEditingKey(record.categoryId);
+      console.log(record)
       form.setFieldsValue(record);
     } else {
       setEditingKey(null);
@@ -61,8 +74,64 @@ function CategoryList() {
 
   const handleOk = () => {
     //values
-    form.validateFields().then(() => {});
+    form.validateFields().then((values) => {
+      if(editingKey){
+        handleUpdateCategory(values)
+      }else{
+        handleAddCategory(values)
+      }
+
+    });
   };
+  const handleAddCategory = async (category) => {
+    // Create a new FormData object
+    const categoryData = {
+      Name: category.name,
+      Type: category.type,
+      Status: category.status
+    };
+    // Send JSON data using Axios
+    await authorizedAxiosInstance.post(
+      `${API_GateWay}/gateway/categories`, 
+      categoryData, // Send data as JSON
+      {
+        headers: {
+          'Content-Type': 'application/json' // Specify content type as JSON
+        }
+      }
+    )
+   refetch()
+   setIsModalVisible(false)
+ }
+
+  const handleUpdateCategory = async (category) => {
+    console.log(category)
+    // Create a new FormData object
+    const categoryData = {
+      Name: category.name,
+      Type: category.type,
+      Status: category.status
+    };
+    setLoading(true)
+    await authorizedAxiosInstance.put(
+      `${API_GateWay}/gateway/categories/${editingKey}`, 
+      categoryData,
+      {
+        headers: {
+            'Content-Type': 'application/json' // Specify content type as JSON
+        }
+      }
+    ).finally(() =>{
+      setLoading(false)
+    })
+    setLoading(false)
+    refetch()
+    setIsModalVisible(false)
+    setEditingId(null)
+  }
+
+
+
 
   const handleCancel = () => {
     setIsModalVisible(false);
@@ -174,41 +243,53 @@ function CategoryList() {
         onChange={handleTableChange}
       />
 
-      <Modal
-        title={editingKey !== null ? "Edit Template" : "Add Template"}
+<Modal
+        title={editingKey !== null ? "Edit Category" : "Add Category"}
         open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
+        width={700}
+        footer={[
+          <Button key="back" onClick={handleCancel}>
+            Cancel
+          </Button>,
+          <Button key="submit" type="primary" onClick={handleOk}>
+            {editingKey !== null ? "Update" : "Add"}
+          </Button>,
+        ]}
       >
         <Form form={form} layout="vertical">
-          <Form.Item
-            name="subject"
-            label="Subject"
-            rules={[{ required: true, message: "Please input the subject!" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="content"
-            label="Content"
-            rules={[{ required: true, message: "Please input the content!" }]}
-          >
-            <TextArea rows={4} />
-          </Form.Item>
-          <Form.Item
-            name="category"
-            label="Category"
-            rules={[{ required: true, message: "Please select the category!" }]}
-          >
-            <Select>
-              <Option value="Onboarding">Onboarding</Option>
-              <Option value="Account">Account</Option>
-              <Option value="Notification">Notification</Option>
-              <Option value="Marketing">Marketing</Option>
-              <Option value="Customer Service">Customer Service</Option>
-              <Option value="Product">Product</Option>
-            </Select>
-          </Form.Item>
+          <Tabs activeKey={activeTab} onChange={setActiveTab}>
+            <TabPane tab="Basic Info" key="1">
+              <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
+                <Form.Item
+                  name="name"
+                  label="Category Name"
+                  rules={[{ required: true, message: 'Please input the category name!' }]}
+                >
+                  <Input prefix={<UserOutlined />} placeholder="Enter category name" />
+                </Form.Item>
+                <Form.Item
+                  name="type"
+                  label="Category Type"
+                  rules={[{ required: true, message: 'Please select at least one type!' }]}
+                >
+                  <Select placeholder="Select roles" prefix={<TeamOutlined />}>
+                    {Types.map((item) => {return(
+                      <Option key={item.id} value={item.value}>{item.label}</Option>
+                    )})}
+                  </Select>
+                </Form.Item>
+                <Form.Item
+                  name="status"
+                  label="Active Status"
+                  valuePropName="checked"
+                >
+                  <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
+                </Form.Item>
+              </Space>
+            </TabPane>
+          </Tabs>
         </Form>
       </Modal>
     </div>
