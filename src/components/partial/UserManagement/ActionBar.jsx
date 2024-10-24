@@ -29,7 +29,6 @@ const filterOptions = {
 function ActionBar({ showModal }) {
   const [search, setSearch] = useSearchParams(); //searchParams hook
 
-
   // Get all filters from URL (if any)
   const statusValues = search.getAll("Statuses") ?? []; 
 
@@ -42,17 +41,6 @@ function ActionBar({ showModal }) {
   const birthdayFromDayJs = birthdayFromValue ? dayjs(birthdayFromValue, dateFormatDisplay) : dayjs()
 
   const birthdayToDayJs  = birthdayToValue ? dayjs(birthdayToValue, dateFormatDisplay) : dayjs()
-
-
-  // //Change statusValues to statusIds to assign in state (render by id not by value)
-  // const statusIds = filterOptions.status
-  //   .filter((option) => statusValues.includes(option.value))
-  //   .map((option) => option.id);
-
-  //   const gennderIds = filterOptions.gender
-  //   .filter((option) => genderValues.includes(option.value))
-  //   .map((option) => option.id);
-
 
   //seletedFilters for after apply button
   const [selectedFilters, setSelectedFilters] = useState({
@@ -81,7 +69,7 @@ function ActionBar({ showModal }) {
     }));
   };
 
-  //Handle Apply button click
+  //Handle Apply filters button click
   const handleSave = () => {
     setSelectedFilters(tempFilters); // set temp filters to selected filters
     handleChangeQuery(tempFilters); // set filters to URL to fetch API
@@ -136,9 +124,7 @@ function ActionBar({ showModal }) {
   //Remove filters by click close button in filter tag
   const removeFilter = (filterType, filterValue) => {
     
-    //define what what will be removed
-    
-
+    //define what that will be removed
     let RemovedTemp = selectedFilters;
 
     if(filterType === "birthdayFrom" || filterType === "birthdayTo"){
@@ -171,12 +157,14 @@ function ActionBar({ showModal }) {
 
   };
 
+  //Handle search keyword
   const handleSearch = (value) =>{
     value ? search.set("Keyword", value) : search.delete("Keyword")
 
     setSearch(search, { replace: true }); 
   }
 
+  //Import User Handler to pass in popup modal
   const handleImportUser = async (formData) => {
     const res = await authorizedAxiosInstance.post(
         `${API_GateWay}/gateway/User/ImportUser`, 
@@ -209,12 +197,46 @@ function ActionBar({ showModal }) {
     }
   }
 
+  //Handle Birth day range change antd
   const handleChangeBirthDayRange = (values) =>{
     setTempFilters((prev) => ({
       ...prev,
       birthdayFrom: values[0] ? values[0].format(dateFormatInRequest): null,
       birthdayTo: values[1] ? values[1].format(dateFormatInRequest): null,
     }));
+  }
+
+  const handleExportUsers = async () =>{
+    const res = await authorizedAxiosInstance.post(
+      `${API_GateWay}/gateway/User/ExportUsers`, 
+        {
+          keyword: search.get("Keyword"),
+          birthDayFrom: search.get("BirthDayFrom"),
+          birthDayTo: search.get("BirthDayTo"),
+          statuses: search.getAll("Statuses"),
+          genders: search.getAll("Genders"),
+          sortBy: search.get("SortBy"),
+          sortOrder: search.get("SortOrder"),
+        },
+        {
+          responseType: "blob",
+        }
+    )
+
+  if(res.data.size > 0){
+        const blob = new Blob([res.data], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+          const url = window.URL.createObjectURL(blob);
+          const outputFilename = `${Date.now()}.xlsx`;
+          const a = document.createElement("a");
+          a.style.display = "none";
+          a.href = url;
+          a.setAttribute("download", outputFilename);
+          // the filename you want
+          document.body.appendChild(a);
+          a.click();
+    }
   }
 
 
@@ -319,9 +341,16 @@ function ActionBar({ showModal }) {
                 icon={<PlusOutlined />}
                 onClick={showModal}
               >
-                Add Template
+                Add User
               </Button>
               <Test handleSubmit={handleImportUser}></Test>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={handleExportUsers}
+              >
+                Export Users
+              </Button>
             </Space>
           </Space>
         </Col>
