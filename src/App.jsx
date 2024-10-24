@@ -19,22 +19,31 @@ import ShoppingCart from "./pages/ShoppingCart/Cart";
 import RolePermissionManager from "./pages/Identity/RolePermissionManagement";
 import CouponList from "./pages/CouponManagement/CouponList";
 import Profile from "./pages/Profile";
-import Test from "./pages/Test";
 import ProductDetail from "./pages/Catalog/ProductDetail";
-import { useMemo } from "react";
 
 function App() {
-  const user = useMemo(() => {
-    return JSON.parse(localStorage.getItem("userInfo"));
-  }, []); 
+
+  const ProtectedRoutes = () => {
+  const user = JSON.parse(localStorage.getItem("userInfo"));
+    if (!user) return <Navigate to="/login" replace={true} />;
+    return <Outlet />;
+  };
 
   // eslint-disable-next-line react/prop-types
-  const ProtectedRoutes = ({isAllow}) => {
-    if (!isAllow) return <Navigate to="/login" replace={true} />;
+  const ProtectedRoutesAdmin = () => {
+    const user = JSON.parse(localStorage.getItem("userInfo"));
+    if (!user && !user.userType == "Admin") return <Navigate to="/login" replace={true} />;
+    return <Outlet />;
+  };
+
+  const ProtectedRoutesCustomer = () => {
+    const user = JSON.parse(localStorage.getItem("userInfo"));
+    if (!user && !user.userType == "Customer") return <Navigate to="/dashboard" replace={true} />;
     return <Outlet />;
   };
   
   const UnAuthorizedRoutes = () => {
+    const user = JSON.parse(localStorage.getItem("userInfo"));
     if (user) return <Navigate to="/dashboard" replace={true} />;
     return <Outlet />;
   };
@@ -43,6 +52,24 @@ function App() {
     <GoogleOAuthProvider clientId="261302569295-6r40gqgs2qjfm2uj7ruq3ranfe7vdmfe.apps.googleusercontent.com">
       <QueryClientProvider client={queryClient}>
         <Routes>
+        {/* Have to login routes */}
+          <Route element={<ProtectedRoutes />}>
+              <Route
+                path="/dashboard"
+                element={
+                  <AppLayout>
+                    <Dashboard />
+                  </AppLayout>
+                }
+              />
+              <Route path="/CartList" element={<ShoppingCart />} />
+              <Route
+                  path="/profile"
+                  element={
+                      <Profile />
+                  }
+              />
+          </Route>
           <Route path="/Category/" element={<CategoryList />}></Route>
           <Route path="/Email/" element={<EmailList />}></Route>
           <Route path="/Coupon/" element={<CouponList />}></Route>
@@ -53,40 +80,24 @@ function App() {
           <Route path="/Cart" element={<ShoppingCart />} />
           <Route path="/ProductDetail/:id" element={<ProductDetail />} />
           <Route path="/Admin/RolePermission" element={<RolePermissionManager />}></Route>
-
           <Route path="/" element={<Navigate to="/login" replace={true} />} />
-          <Route path="/Test" element={<Test/>}></Route>
           <Route element={<UnAuthorizedRoutes />}>
             <Route path="/login" element={<Login />} />
             <Route path="/reconfirm" element={<EmailReconfirm />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgotpassword" element={<ForgotPassword />} />
             <Route path="/ResetPassword" element={<ForgetPasswordConfirm />} />
-            <Route path="/CartList" element={<ShoppingCart />} />
-          </Route>
-
-          <Route element={<ProtectedRoutes isAllow={user} />}>
-          <Route
-              path="/dashboard"
-              element={
-                <AppLayout>
-                  <Dashboard />
-                </AppLayout>
-              }
-            />
            
           </Route>
-          <Route element={<ProtectedRoutes isAllow={!!user && user.userType === 'admin'} />}>
-          <Route
-              path="/profile"
-              element={
-                <AppLayout>
-                  <Profile />
-                </AppLayout>
-              }
-            />
-            <Route path="/Admin/User" element={<UserList />}></Route>
-            <Route path="/Admin/RolePermission" element={<RolePermissionManager/>}></Route>
+
+          <Route element={<ProtectedRoutesCustomer />}>
+          
+           
+          </Route>
+          <Route element={<ProtectedRoutesAdmin />}>
+             
+              <Route path="/Admin/User" element={<UserList />}></Route>
+              <Route path="/Admin/RolePermission" element={<RolePermissionManager/>}></Route>
           </Route>
           <Route path="/CustomerChatBox/:groupId" element={<CustomerChatbox />} />
           <Route path="/AdminChatBox/:groupId?" element={<AdminChatBox />} />

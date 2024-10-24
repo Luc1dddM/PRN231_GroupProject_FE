@@ -1,4 +1,4 @@
-import { authorizedAxiosInstance } from "../../utils/authorizedAxios";
+import { useState } from "react";
 import { API_GateWay } from "../../utils/constants";
 import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
@@ -11,14 +11,18 @@ import {
   Layout,
   message,
 } from "antd";
+import { authorizedAxiosInstance } from "../../utils/authorizedAxios";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
+import GlobalLoading from "../../components/global/Loading"; 
 const { Title } = Typography;
 const { Content } = Layout;
 
 function Login() {
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (values) => {
+    setLoading(true)
     const { email, password } = values;
     const res = await authorizedAxiosInstance.post(
       `${API_GateWay}/gateway/Identity/Login`,
@@ -26,7 +30,9 @@ function Login() {
         userName: email,
         password: password,
       }
-    );
+    ).finally(() =>{
+      setLoading(false)
+    });
 
     const userInfo = {
       email: res.data.result.email,
@@ -76,6 +82,7 @@ function Login() {
 
   return (
     <Layout>
+      <GlobalLoading isLoading={loading} />
       <Content
         style={{
           padding: "50px",

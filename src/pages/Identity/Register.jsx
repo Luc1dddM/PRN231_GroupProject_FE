@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Form, Input, Button, Typography, Layout } from "antd";
 import { UserOutlined, MailOutlined, PhoneOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { authorizedAxiosInstance } from "../../utils/authorizedAxios";
 import { API_GateWay } from "../../utils/constants";
+import GlobalLoading from "../../components/global/Loading"; 
 
 const { Title } = Typography;
 const { Content } = Layout;
@@ -10,13 +12,18 @@ const { Content } = Layout;
 function Register() {
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+
 
   const onFinish = async (values) => {
+    setLoading(true)
     var res = await authorizedAxiosInstance.post(`${API_GateWay}/api/Identity/Register`, {
       email: values.email,
       name: values.fullName,
       phonenumber: values.phoneNumber,
       password: values.password,
+    }).finally(() => {
+      setLoading(false)
     });
 
     if (res.data.result) {
@@ -26,6 +33,7 @@ function Register() {
 
   return (
     <Layout>
+      <GlobalLoading isLoading={loading} />
       <Content
         style={{
           padding: "50px",

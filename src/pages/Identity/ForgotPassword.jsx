@@ -4,22 +4,27 @@ import { useNavigate } from "react-router-dom";
 import { MailOutlined, LoginOutlined } from "@ant-design/icons";
 import { authorizedAxiosInstance } from "../../utils/authorizedAxios";
 import { API_GateWay } from "../../utils/constants";
+import GlobalLoading from "../../components/global/Loading"; 
 
 const { Title, Paragraph } = Typography;
 
 const ForgotPassword = () => {
+  const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const nav = useNavigate();
 
   const onFinish = async (values) => {
+    setLoading(true);
     await authorizedAxiosInstance
-      .post(`${API_GateWay}/api/Identity/ForgotPassword`, {
+      .post(`${API_GateWay}/gateway/Identity/ForgotPassword`, {
         emailAddress: values.email,
       })
       .then(() => {
         setIsSubmitted(true);
         form.resetFields();
+      }).finally(() => {
+        setLoading(false)
       });
   };
 
@@ -30,7 +35,7 @@ const ForgotPassword = () => {
   if (isSubmitted) {
     return (
       <div style={{ maxWidth: "400px", margin: "40px auto", textAlign: "center" }}>
-        <Title level={2}>Email Reconfirmed</Title>
+        <Title level={2}>Forgot Password</Title>
         <Paragraph>Thank you for requesting a password reset. You will receive an email shortly with instructions to reset your password.</Paragraph>
         <Button type="primary" icon={<LoginOutlined />} onClick={handleBackToLogin}>
           Back to Login
@@ -41,6 +46,7 @@ const ForgotPassword = () => {
 
   return (
     <div style={{ maxWidth: "400px", margin: "40px auto", padding: "20px" }}>
+      <GlobalLoading isLoading={loading} />
       <Title level={2} style={{ textAlign: "center" }}>
         Forgot Password
       </Title>

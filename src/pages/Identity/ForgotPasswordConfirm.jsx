@@ -1,14 +1,17 @@
-import { Form, Input, Button, Typography, Layout, message } from "antd";
+import { useState } from "react";
+import { Form, Input, Button, Typography, Layout } from "antd";
 import { LockOutlined } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import { authorizedAxiosInstance } from "../../utils/authorizedAxios";
 import { API_GateWay } from "../../utils/constants";
-import { useEffect } from "react";
+import { toast } from "react-toastify";
+import GlobalLoading from "../../components/global/Loading"; 
 
 const { Title } = Typography;
 const { Content } = Layout;
 
 function ForgetPasswordConfirm() {
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const [form] = Form.useForm();
@@ -17,24 +20,22 @@ function ForgetPasswordConfirm() {
   const email = searchParams.get("Email");
   const code = searchParams.get("Code");
 
-  useEffect(() => {
-    if (email) form.setFieldsValue({ email });
-    if (code) form.setFieldsValue({ code });
-  }, [location, form]);
-
   const onFinish = async (values) => {
-    await authorizedAxiosInstance.post(`${API_GateWay}/api/Identity/ResetPassword`, {
-      email: values.email,
-      code: values.code,
-      newPassword: values.password,
+    setLoading(true)
+    await authorizedAxiosInstance.post(`${API_GateWay}/gateway/Identity/ReconfirmForgotPassword`, {
+      email: email,
+      code: code,
+      password: values.password,
+    }).finally(() => {
+      setLoading(false)
     });
-
-    message.success("Password reset successfully!");
+    toast.success("Password reset successfully!");
     navigate("/login");
   };
 
   return (
     <Layout>
+      <GlobalLoading isLoading={loading} />
       <Content
         style={{
           padding: "50px",

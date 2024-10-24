@@ -34,22 +34,21 @@ function AppLayout() {
   const [user, setUser] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // useEffect(() => {
-  //   const userId = JSON.parse(localStorage.getItem("userInfo")).id;
-  //   if(userId){
-  //     setLoading(true);
-  //     const fetchData = async () => {
-  //       const res = await authorizedAxiosInstance.get(
-  //         `${API_GateWay}/gateway/User/${userId}`
-  //       );
-  //       console.log(res.data.result)
-  //       setUser(res.data.result);
-  //     };
-  //     fetchData().then(() => {
-  //       setLoading(false);
-  //     });
-  //   }
-  // }, []);
+  useEffect(() => {
+    const userId = JSON.parse(localStorage.getItem("userInfo")).id;
+    if(userId){
+      setLoading(true);
+      const fetchData = async () => {
+        const res = await authorizedAxiosInstance.get(
+          `${API_GateWay}/gateway/User/${userId}`
+        );
+        setUser(res.data.result);
+      };
+      fetchData().then(() => {
+        setLoading(false);
+      });
+    }
+  }, []);
 
   const [visible, setVisible] = useState(false);
 
@@ -81,6 +80,7 @@ function AppLayout() {
 
   const logout = () => {
     handleLogoutApi();
+    console.log("Logouted")
     navigate("/login");
   };
 
@@ -100,7 +100,7 @@ function AppLayout() {
 
   return (
     <Layout>
-      {/* <GlobalLoading isLoading={loading}/> */}
+      <GlobalLoading isLoading={loading}/>
       <Header className="flex items-center justify-between bg-[#001529] p-0 px-6">
         <Button
           type="text"
@@ -117,7 +117,7 @@ function AppLayout() {
         <Dropdown overlay={menu} trigger={["hover"]}>
           <a onClick={(e) => e.preventDefault()} className="text-white">
             <Space>
-              Hover me
+             {user.email}
               <DownOutlined />
             </Space>
           </a>
