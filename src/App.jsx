@@ -21,11 +21,12 @@ import CouponList from "./pages/CouponManagement/CouponList";
 import Profile from "./pages/Profile";
 import Test from "./pages/Test";
 import ProductDetail from "./pages/Catalog/ProductDetail";
-
-
+import { useMemo } from "react";
 
 function App() {
-  const user = JSON.parse(localStorage.getItem("userInfo"));
+  const user = useMemo(() => {
+    return JSON.parse(localStorage.getItem("userInfo"));
+  }, []); 
 
   // eslint-disable-next-line react/prop-types
   const ProtectedRoutes = ({isAllow}) => {
@@ -34,7 +35,6 @@ function App() {
   };
   
   const UnAuthorizedRoutes = () => {
-    const user = JSON.parse(localStorage.getItem("userInfo"));
     if (user) return <Navigate to="/dashboard" replace={true} />;
     return <Outlet />;
   };
@@ -43,10 +43,8 @@ function App() {
     <GoogleOAuthProvider clientId="261302569295-6r40gqgs2qjfm2uj7ruq3ranfe7vdmfe.apps.googleusercontent.com">
       <QueryClientProvider client={queryClient}>
         <Routes>
-          <Route path="/User/" element={<UserList />}></Route>
           <Route path="/Category/" element={<CategoryList />}></Route>
           <Route path="/Email/" element={<EmailList />}></Route>
-
           <Route path="/Coupon/" element={<CouponList />}></Route>
           <Route
             path="/Admin/RolePermission"
@@ -67,7 +65,7 @@ function App() {
             <Route path="/CartList" element={<ShoppingCart />} />
           </Route>
 
-          <Route element={<ProtectedRoutes isAllow={!!user} />}>
+          <Route element={<ProtectedRoutes isAllow={user} />}>
           <Route
               path="/dashboard"
               element={

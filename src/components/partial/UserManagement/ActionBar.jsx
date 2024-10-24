@@ -7,9 +7,13 @@ import { API_GateWay } from "../../../utils/constants";
 import { toast } from "react-toastify";
 import PropTypes from "prop-types";
 import Test from "../../../pages/Test";
+import dayjs from 'dayjs';
 
 const { Search } = Input;
 const { RangePicker } = DatePicker;
+const dateFormatDisplay = 'DD-MM-YYYY';
+const dateFormatInRequest = 'YYYY-MM-DD';
+
 //Define filters options in filters (id: checking, label: display in webisite, value: value pass in URL)
 const filterOptions = {
   gender: [ 
@@ -25,21 +29,37 @@ const filterOptions = {
 function ActionBar({ showModal }) {
   const [search, setSearch] = useSearchParams(); //searchParams hook
 
-  const statusValues = search.getAll("Statuses") ?? []; // Get array of statuses from URL (if any)
 
-  const genderValues = search.getAll("Genders") ?? []; // Get array of statuses from URL (if any)
+  // Get all filters from URL (if any)
+  const statusValues = search.getAll("Statuses") ?? []; 
+
+  const genderValues = search.getAll("Genders") ?? []; 
+
+  const birthdayFromValue = search.get("BirthDayFrom")
+
+  const birthdayToValue = search.get("BirthDayTo")
+
+  const birthdayFromDayJs = birthdayFromValue ? dayjs(birthdayFromValue, dateFormatDisplay) : dayjs()
+
+  const birthdayToDayJs  = birthdayToValue ? dayjs(birthdayToValue, dateFormatDisplay) : dayjs()
 
 
-  //Change statusValues to statusIds to assign in state (render by id not by value)
-  const statusIds = filterOptions.status
-    .filter((option) => statusValues.includes(option.value))
-    .map((option) => option.id);
+  // //Change statusValues to statusIds to assign in state (render by id not by value)
+  // const statusIds = filterOptions.status
+  //   .filter((option) => statusValues.includes(option.value))
+  //   .map((option) => option.id);
+
+  //   const gennderIds = filterOptions.gender
+  //   .filter((option) => genderValues.includes(option.value))
+  //   .map((option) => option.id);
+
 
   //seletedFilters for after apply button
   const [selectedFilters, setSelectedFilters] = useState({
-    gender: [],
-    status: statusIds ?? [],
-    birthday: null,
+    gender: genderValues ?? [],
+    status: statusValues ?? [],
+    birthdayFrom: birthdayFromValue ?? null,
+    birthdayTo: birthdayToValue ?? null,
   });
 
   //TempFilters for tmp user choose in the filter modal
@@ -48,7 +68,6 @@ function ActionBar({ showModal }) {
     status: [],
     birthdayFrom: null,
     birthdayTo: null,
-
   });
 
   //Status modal (open/close)
@@ -92,7 +111,17 @@ function ActionBar({ showModal }) {
     search.delete("Genders");
   }
 
+  if (object.birthdayFrom) { 
+    search.set("BirthDayFrom", object.birthdayFrom);    
+  } else {
+    search.delete("BirthDayFrom");
+  }
 
+  if (object.birthdayTo) { 
+    search.set("BirthDayTo", object.birthdayTo);    
+  } else {
+    search.delete("BirthDayTo");
+  }
     setSearch(search, { replace: true }); // Set all params in seach to url
   };
 
@@ -106,13 +135,25 @@ function ActionBar({ showModal }) {
 
   //Remove filters by click close button in filter tag
   const removeFilter = (filterType, filterValue) => {
+    
     //define what what will be removed
-    const RemovedTemp = {
-      ...selectedFilters,
-      [filterType]: selectedFilters[filterType].filter(
-        (value) => value !== filterValue
-      ),
-    };
+    
+
+    let RemovedTemp = selectedFilters;
+
+    if(filterType === "birthdayFrom" || filterType === "birthdayTo"){
+      RemovedTemp = {
+        ...selectedFilters,
+        [filterType] : null
+      }
+    }else{
+      RemovedTemp = {
+        ...selectedFilters,
+        [filterType]: selectedFilters[filterType].filter(
+          (value) => value !== filterValue
+        ),
+      };
+    }
 
     //Change query in URL before change in state
     handleChangeQuery(RemovedTemp);
@@ -168,6 +209,14 @@ function ActionBar({ showModal }) {
     }
   }
 
+  const handleChangeBirthDayRange = (values) =>{
+    setTempFilters((prev) => ({
+      ...prev,
+      birthdayFrom: values[0] ? values[0].format(dateFormatInRequest): null,
+      birthdayTo: values[1] ? values[1].format(dateFormatInRequest): null,
+    }));
+  }
+
 
   //Filter modal content
   const filterContent = (
@@ -210,8 +259,9 @@ function ActionBar({ showModal }) {
         <h4>Ngày sinh</h4>
         <RangePicker
           style={{ width: "100%" }}
-          value={tempFilters.birthday}
-          onChange={(date) => handleFilterChange("birthday", date)}
+          defaultValue={[birthdayFromDayJs, birthdayToDayJs]}
+          format={dateFormatDisplay}
+          onCalendarChange={(dates) => handleChangeBirthDayRange(dates)}
         />
       </div>
 
@@ -285,7 +335,7 @@ function ActionBar({ showModal }) {
               <Space size="small" style={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               {Object.keys(selectedFilters).map((filterType) => {
               // Ensure selectedFilters[filterType] is an array and filterType is not 'birthday'
-              if (filterType !== "birthday") {
+              if (filterType !== "birthdayFrom" && filterType !== "birthdayTo") {
                 return (selectedFilters[filterType] || []).map((value) => (
                     <Tag
                       key={`${filterType}-${value}`}
@@ -300,8 +350,20 @@ function ActionBar({ showModal }) {
                       }
                     </Tag>
                 ));
-              }
-              return null; // Return null for 'birthday' filterType
+              }else{
+                if(selectedFilters[filterType]){
+                  return(
+                    <Tag
+                      key={`${filterType}-${selectedFilters[filterType]}`}
+                      closable
+                      onClose={() => removeFilter(filterType, selectedFilters[filterType])}
+                      style={{ marginRight: 3 }}
+                    >
+                      {
+                        selectedFilters[filterType]
+                      }
+                    </Tag>
+                );}}
             })}
               </Space>
             </Col>
