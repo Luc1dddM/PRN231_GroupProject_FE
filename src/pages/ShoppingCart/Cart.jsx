@@ -116,7 +116,9 @@ function ShoppingCart() {
         queryClient.setQueryData(["cart"], (oldCartData) => {
           if (!oldCartData) return oldCartData;
 
-          const updatedDetails = oldCartData.response.result.cartDetails.map((detail) => (detail.cartDetailId === cartHeader.cartDetails[0].cartDetailId ? { ...detail, quantity: cartHeader.cartDetails[0].quantity } : detail));
+          const updatedDetails = oldCartData.response.result.cartDetails.map((detail) =>
+            detail.cartDetailId === cartHeader.cartDetails[0].cartDetailId ? { ...detail, quantity: cartHeader.cartDetails[0].quantity } : detail
+          );
 
           return {
             ...oldCartData,
@@ -247,7 +249,7 @@ function ShoppingCart() {
                       <span>Total</span>
                       <span>${total.toFixed(2)}</span>
                     </div>
-                    <Button type="primary" block className="mt-6" disabled={totalItems === 0}>
+                    <Button type="primary" block className="mt-6" disabled={totalItems === 0} onClick={() => navigate("/CartCheckout")}>
                       Checkout
                     </Button>
                   </div>

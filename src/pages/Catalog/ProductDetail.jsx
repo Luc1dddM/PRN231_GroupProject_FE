@@ -31,6 +31,7 @@ function ProductDetail() {
       refetchOnMount: true,
     }
   );
+  console.log(productDetailData);
   //-------------------------------------------------------
 
   // Memoize the colorsView to avoid unnecessary re-renders
