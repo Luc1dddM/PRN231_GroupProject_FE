@@ -36,11 +36,9 @@ function UserList() {
   });
 
   //Get List Student and ralative info by custom UseItems Hook
-  const {data, refetch, isLoading} = useItems("/api/User", "UserList", pagination);
+  const {data, refetch, isLoading} = useItems("/gateway/User", "UserList", pagination);
   const userList = data?.result?.items ?? [];
   const totalItems = data?.result?.totalItems;
-
-  console.log(userList)
 
   useEffect(() => {
     if (isLoading) {
@@ -53,7 +51,6 @@ function UserList() {
   ]);
 
   const showModal = (record) => {
-    console.log(record)
     if (record) {
       setEditingId(record.id);
       const birthDay = record.birthDay ? dayjs(record.birthDay) : null;
@@ -69,9 +66,7 @@ function UserList() {
   };
 
   const handleOk = () => {
-    console.log("ts")
     form.validateFields().then((values) => {
-      console.log(values)
       if(editingId){
         handleUpdateUser(values)
       }else{
@@ -168,15 +163,12 @@ function UserList() {
       key: "fullName",
       fixed: 'left',
       sorter: true,
-      width: '10%',
     },
     {
       title: "Email",
       dataIndex: "email",
       key: "email",
       sorter: true,
-      responsive: ['lg'],
-      width: 200,
     },
     {
       title: "Phone Number",
@@ -189,8 +181,12 @@ function UserList() {
       dataIndex: "roles",
       key: "roles",
       sorter: true,
-      responsive: ['lg'],
-      width: 200,
+    },
+    {
+      title: "Gender",
+      dataIndex: "gender",
+      key: "gender",
+      sorter: true,
     },
     {
       title: "Birth Day",

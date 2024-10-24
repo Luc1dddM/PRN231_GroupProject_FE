@@ -28,8 +28,6 @@ function Login() {
       }
     );
 
-    console.log(res.data.result)
-
     const userInfo = {
       email: res.data.result.email,
       id: res.data.result.userId,
@@ -47,7 +45,6 @@ function Login() {
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("refreshToken", refreshToken);
     localStorage.setItem("userInfo", JSON.stringify(userInfo));
-
     navigate("/dashboard");
   };
 

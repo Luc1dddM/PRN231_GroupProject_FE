@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { handleLogoutApi } from "../../apis";
+import { API_GateWay } from "../../utils/constants";
+import { authorizedAxiosInstance } from "../../utils/authorizedAxios";
+import GlobalLoading from "../global/Loading"; 
 import {
   DownOutlined,
   SettingOutlined,
@@ -18,7 +21,6 @@ import {
   Drawer,
   Input,
   Menu,
-  Badge
 } from "antd";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
@@ -29,8 +31,25 @@ const { Header, Content, Footer } = Layout;
 
 function AppLayout() {
   const navigate = useNavigate(); // To use navigation
+  const [user, setUser] = useState("");
+  const [loading, setLoading] = useState(false);
 
-
+  // useEffect(() => {
+  //   const userId = JSON.parse(localStorage.getItem("userInfo")).id;
+  //   if(userId){
+  //     setLoading(true);
+  //     const fetchData = async () => {
+  //       const res = await authorizedAxiosInstance.get(
+  //         `${API_GateWay}/gateway/User/${userId}`
+  //       );
+  //       console.log(res.data.result)
+  //       setUser(res.data.result);
+  //     };
+  //     fetchData().then(() => {
+  //       setLoading(false);
+  //     });
+  //   }
+  // }, []);
 
   const [visible, setVisible] = useState(false);
 
@@ -58,12 +77,7 @@ function AppLayout() {
       icon: <SettingOutlined />,
       onClick: () => logout(),
     },
-
-
   ];
-
-
-  
 
   const logout = () => {
     handleLogoutApi();
@@ -86,6 +100,7 @@ function AppLayout() {
 
   return (
     <Layout>
+      {/* <GlobalLoading isLoading={loading}/> */}
       <Header className="flex items-center justify-between bg-[#001529] p-0 px-6">
         <Button
           type="text"

@@ -59,8 +59,9 @@ authorizedAxiosInstance.interceptors.response.use(
           })
           // eslint-disable-next-line no-unused-vars
           .catch((_error) => {
+            console.log(_error)
             handleLogoutApi();
-            location.href = "/login";
+            location.href = "./login"
           })
           .finally(() => {
             refreshTokenPromise = null;

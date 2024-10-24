@@ -5,21 +5,23 @@ import { API_GateWay } from "../utils/constants";
 import { authorizedAxiosInstance } from "../utils/authorizedAxios";
 function Dashboard() {
   const [user, setUser] = useState("");
-  const userId = JSON.parse(localStorage.getItem("userInfo")).id;
   const [loading, setLoading] = useState(false);
   
   useEffect(() => {
-    setLoading(true);
-    const fetchData = async () => {
-      const res = await authorizedAxiosInstance.get(
-        `${API_GateWay}/gateway/User/${userId}`
-      );
-      console.log(res.data.result)
-      setUser(res.data.result);
-    };
-    fetchData().then(() => {
-      setLoading(false);
-    });
+    const userId = JSON.parse(localStorage.getItem("userInfo")).id;
+    if(userId){
+      setLoading(true);
+      const fetchData = async () => {
+        const res = await authorizedAxiosInstance.get(
+          `${API_GateWay}/gateway/User/${userId}`
+        );
+        console.log(res.data.result)
+        setUser(res.data.result);
+      };
+      fetchData().then(() => {
+        setLoading(false);
+      });
+    }
   }, []);
 
   return (
